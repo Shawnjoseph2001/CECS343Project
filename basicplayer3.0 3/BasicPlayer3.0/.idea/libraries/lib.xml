@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jogg-0.0.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mp3spi1.9.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jorbis-0.0.15.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/vorbisspi1.0.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jspeex0.9.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tritonus_share.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jl1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mp3spi1.9.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-logging-api.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
