@@ -8,10 +8,13 @@ import java.net.*;
 import java.util.logging.*;
 
 public class StreamPlayerGUI extends JFrame {
-    BasicPlayer player;
+     BasicPlayer player;
     JPanel main;
     JScrollPane jt;
-    JButton jb;
+    JButton play;
+    JButton pause;
+    JButton skipForward;
+    JButton skipBack;
     JTextField stringSelected;
     JTable j;
     JLabel nowPlaying;
@@ -21,9 +24,17 @@ public class StreamPlayerGUI extends JFrame {
         player = new BasicPlayer();
         main = new JPanel();
         // j = new JTable();
-        jb = new JButton("Play");
+        play = new JButton("Play");
+        pause = new JButton("Pause");
+        skipForward = new JButton(" >> ");
+        skipBack = new JButton(" << ");
+
         stringSelected = new JFormattedTextField("No string assigned");
-        jb.addActionListener(new ButtonListener());
+        play.addActionListener(new ButtonListener());
+        pause.addActionListener(new ButtonListener());
+        skipForward.addActionListener(new ButtonListener());
+        skipBack.addActionListener(new ButtonListener());
+
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 currentRow = j.getSelectedRow();
@@ -35,9 +46,12 @@ public class StreamPlayerGUI extends JFrame {
         // j.add(jb);
         nowPlaying = new JLabel("Now playing: nothing");
         //this.add(nowPlaying);
-        this.setTitle("StreamPlayer by Shawn Joseph");//change the name to yours
+        this.setTitle("StreamPlayer by Shawn Joseph and Amanda Jones");//change the name to yours
         this.add(main);
-        main.add(jb);
+        main.add(skipBack);
+        main.add(play);
+        main.add(pause);
+        main.add(skipForward);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension d = new Dimension(500, 500);
         //j.add(jb);
