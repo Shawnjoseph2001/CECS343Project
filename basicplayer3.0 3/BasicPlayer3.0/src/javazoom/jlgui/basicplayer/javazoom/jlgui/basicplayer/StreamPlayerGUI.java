@@ -40,14 +40,14 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem open;
     JMenuItem exit;
     String[] columns;
-    boolean isNowPlaying;
+    int currentSongID;
 
     Statement stmt = null;
     int numRows;
     DefaultTableModel model;
 
     public StreamPlayerGUI() throws SQLException {
-        isNowPlaying = false;
+        currentSongID = 0;
         player = new BasicPlayer();
         main = new JPanel();
         play = new JButton("Play");
@@ -170,6 +170,7 @@ public class StreamPlayerGUI extends JFrame {
                         ResultSet r = p.executeQuery();
                         if (r.next()) {
                             String s = r.getString("Filepath");
+                            currentSongID = r.getInt("ID");
                             player.open(new File(s));
                             player.play();
                         }
@@ -305,7 +306,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if(e.getSource().equals(skipForward)) {
                 try {
-                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentRow + 1));
+                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentSongID + 1));
                     ResultSet r = p.executeQuery();
                     if(r.next()) {
                         String fp = r.getString("Filepath");
@@ -318,7 +319,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if(e.getSource().equals(skipBack)) {
                 try {
-                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentRow - 1));
+                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentSongID - 1));
                     ResultSet r = p.executeQuery();
                     if(r.next()) {
                         String fp = r.getString("Filepath");
