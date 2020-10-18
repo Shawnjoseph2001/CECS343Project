@@ -40,12 +40,14 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem open;
     JMenuItem exit;
     String[] columns;
+    boolean isNowPlaying;
 
     Statement stmt = null;
     int numRows;
     DefaultTableModel model;
 
-    public StreamPlayerGUI() {
+    public StreamPlayerGUI() throws SQLException {
+        isNowPlaying = false;
         player = new BasicPlayer();
         main = new JPanel();
         play = new JButton("Play");
@@ -105,6 +107,18 @@ public class StreamPlayerGUI extends JFrame {
         this.setJMenuBar(menuBar);
 
         main.addMouseListener(new PopClickListener());
+
+        PreparedStatement populate = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+        ResultSet songList = populate.executeQuery();
+        while(songList.next()) {
+            String[] columnList = new String[5];
+            columnList[0] = songList.getString("ID");
+            columnList[1] = songList.getString("Title");
+            columnList[2] = songList.getString("Genre");
+            columnList[3] = songList.getString("Artist");
+            columnList[4] = songList.getString("Filepath");
+            model.addRow(columnList);
+        }
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension d = new Dimension(500, 500);
@@ -240,9 +254,25 @@ public class StreamPlayerGUI extends JFrame {
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
+                for(int i = 0; i < model.getRowCount(); i++) {
+                    model.removeRow(i);
+                }
+                try {
+                    PreparedStatement populate = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+                    ResultSet songList = populate.executeQuery();
+                    while(songList.next()) {
+                        String[] columnList = new String[5];
+                        columnList[0] = songList.getString("ID");
+                        columnList[1] = songList.getString("Title");
+                        columnList[2] = songList.getString("Genre");
+                        columnList[3] = songList.getString("Artist");
+                        columnList[4] = songList.getString("Filepath");
+                        model.addRow(columnList);
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
 
-                model.removeRow(currentSelectedRow);
-                model.removeRow(currentSelectedRow);
             }
             else if(e.getSource().equals(open)) {
                     final JFileChooser fc = new JFileChooser();
