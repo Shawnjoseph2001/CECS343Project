@@ -334,7 +334,28 @@ public class StreamPlayerGUI extends JFrame {
                     throwables.printStackTrace();
                 }
             }
+            else if(e.getSource().equals(open)) {
+                final JFileChooser fc = new JFileChooser();
+                int returnVal = fc.showOpenDialog(main);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    try {
+                        player.open(file);
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
+                    }
+                    player.play();
+                }
         }
+            else if(e.getSource().equals(exit)) {
+                try {
+                    BasicPlayerTest.connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+                System.exit(0);
+            }
+            }
     }
 }
 
