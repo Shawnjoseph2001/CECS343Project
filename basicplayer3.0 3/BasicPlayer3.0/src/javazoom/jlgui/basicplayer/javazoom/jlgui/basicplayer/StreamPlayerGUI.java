@@ -41,6 +41,7 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem exit;
     String[] columns;
     int currentSongID;
+    JPopupMenu popupMenu;
 
     Statement stmt = null;
     int numRows;
@@ -69,6 +70,12 @@ public class StreamPlayerGUI extends JFrame {
         skipForward.addActionListener(new ButtonListener());
         skipBack.addActionListener(new ButtonListener());
 
+        popupMenu = new JPopupMenu();
+        popupMenu.add(addSong);
+        popupMenu.add(delete);
+        popupMenu.add(open);
+        popupMenu.add(exit);
+
         String[] columns = {"ID", "Title", "Genre", "Artist", "Year"};
         //Object[][] data = {{"", "", "", "", ""}};
         //j = new JTable(data, columns);
@@ -86,6 +93,9 @@ public class StreamPlayerGUI extends JFrame {
         addSong.addActionListener(new ButtonListener());
         delete.addActionListener(new ButtonListener());
         open.addActionListener(new ButtonListener());
+        exit.addActionListener(new ButtonListener());
+
+        popupMenu.addMouseListener(new PopClickListener());
 
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -106,7 +116,9 @@ public class StreamPlayerGUI extends JFrame {
         main.add(skipForward);
         main.add(scrollPane);
         this.setJMenuBar(menuBar);
+        main.add(popupMenu);
 
+        scrollPane.addMouseListener(new PopClickListener());
         main.addMouseListener(new PopClickListener());
 
         PreparedStatement populate = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
@@ -140,9 +152,10 @@ public class StreamPlayerGUI extends JFrame {
             if (e.isPopupTrigger())
             {
                 System.out.println("mouse clicked");
-                PopupMenu menu = new PopupMenu();
-                menu.show(e.getComponent(), e.getX(), e.getY());
+                popupMenu.show(e.getComponent(), e.getX(), e.getY());
             }
+            else
+                System.out.println("no");
         }
 
     }
