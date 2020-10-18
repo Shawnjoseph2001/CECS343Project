@@ -39,6 +39,10 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem delete;
     JMenuItem open;
     JMenuItem exit;
+    JMenuItem add2;
+    JMenuItem delete2;
+    JMenuItem open2;
+    JMenuItem exit2;
     String[] columns;
     int currentSongID;
     JPopupMenu popupMenu;
@@ -63,6 +67,10 @@ public class StreamPlayerGUI extends JFrame {
         delete = new JMenuItem("Delete song");
         open = new JMenuItem("Open song");
         exit = new JMenuItem("Exit Program");
+        add2 = new JMenuItem("Add song");
+        delete2 = new JMenuItem("Delete song");
+        open2 = new JMenuItem("Open song");
+        exit2 = new JMenuItem("Exit Program");
         file.add(addSong);
         file.add(delete);
         file.add(open);
@@ -71,10 +79,10 @@ public class StreamPlayerGUI extends JFrame {
         skipBack.addActionListener(new ButtonListener());
 
         popupMenu = new JPopupMenu();
-        popupMenu.add(addSong);
-        popupMenu.add(delete);
-        popupMenu.add(open);
-        popupMenu.add(exit);
+        popupMenu.add(add2);
+        popupMenu.add(delete2);
+        popupMenu.add(open2);
+        popupMenu.add(exit2);
 
         String[] columns = {"ID", "Title", "Genre", "Artist", "Year"};
         //Object[][] data = {{"", "", "", "", ""}};
@@ -206,7 +214,7 @@ public class StreamPlayerGUI extends JFrame {
                     basicPlayerException.printStackTrace();
                 }
             }
-            else if(e.getSource().equals(addSong)) {
+            else if(e.getSource().equals(addSong) || e.getSource().equals(add2)) {
                 {
                     final JFileChooser fc = new JFileChooser();
                     int returnVal = fc.showOpenDialog(main);
@@ -266,7 +274,7 @@ public class StreamPlayerGUI extends JFrame {
                     }
                 }
             }
-            else if(e.getSource().equals(delete)) {
+            else if(e.getSource().equals(delete) || e.getSource().equals(delete2)) {
                 int currentSelectedRow = j.getSelectedRow();
                 try {
                     String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
@@ -298,7 +306,7 @@ public class StreamPlayerGUI extends JFrame {
                 }
 
             }
-            else if(e.getSource().equals(open)) {
+            else if(e.getSource().equals(open) || e.getSource().equals(open2)) {
                     final JFileChooser fc = new JFileChooser();
                     String fileName = "";
                     int returnVal = fc.showOpenDialog(main);
@@ -313,7 +321,7 @@ public class StreamPlayerGUI extends JFrame {
                     }
                     //System.out.println(path);
             }
-            else if(e.getSource().equals(exit)) {
+            else if(e.getSource().equals(exit) || e.getSource().equals(exit2)) {
                 try {
                     BasicPlayerTest.connection.close();
                 } catch (SQLException throwables) {
