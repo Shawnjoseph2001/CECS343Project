@@ -27,7 +27,7 @@ public class StreamPlayerGUI extends JFrame {
     int currentRow;
     String path;
     String filename;
-    int id = 0;
+    int id;
     String idString = "";
     String title;
     String artist;
@@ -119,6 +119,10 @@ public class StreamPlayerGUI extends JFrame {
             columnList[3] = songList.getString("Artist");
             columnList[4] = songList.getString("Year");
             model.addRow(columnList);
+            int idt = songList.getInt("ID");
+            if(idt > id) {
+                id = idt + 1;
+            }
         }
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
