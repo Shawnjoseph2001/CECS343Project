@@ -344,7 +344,11 @@ public class StreamPlayerGUI extends JFrame {
                     } catch (BasicPlayerException basicPlayerException) {
                         basicPlayerException.printStackTrace();
                     }
-                    player.play();
+                    try {
+                        player.play();
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
+                    }
                 }
         }
             else if(e.getSource().equals(exit)) {
