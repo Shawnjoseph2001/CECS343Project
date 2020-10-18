@@ -141,13 +141,15 @@ public class StreamPlayerGUI extends JFrame {
                 }
             }
             else if(e.getSource().equals(play)) {
-                String query = "SELECT Filepath FROM songs WHERE ID=" + currentRow;
+                String query = "SELECT * FROM songs WHERE ID=" + currentRow;
                 try {
                     PreparedStatement p = BasicPlayerTest.connection.prepareStatement(query);
                     ResultSet r = p.executeQuery();
-                    String s = r.getString(1);
-                    player.open(new File(s));
-                    player.play();
+                    if(r.next()) {
+                        String s = r.getString("Filepath");
+                        player.open(new File(s));
+                        player.play();
+                    }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
                 }
