@@ -66,7 +66,8 @@ public class StreamPlayerGUI extends JFrame {
         file.add(delete);
         file.add(open);
         file.add(exit);
-
+        skipForward.addActionListener(new ButtonListener());
+        skipBack.addActionListener(new ButtonListener());
 
         String[] columns = {"ID", "Title", "Genre", "Artist", "Year"};
         //Object[][] data = {{"", "", "", "", ""}};
@@ -116,7 +117,7 @@ public class StreamPlayerGUI extends JFrame {
             columnList[1] = songList.getString("Title");
             columnList[2] = songList.getString("Genre");
             columnList[3] = songList.getString("Artist");
-            columnList[4] = songList.getString("Filepath");
+            columnList[4] = songList.getString("Year");
             model.addRow(columnList);
         }
 
@@ -155,18 +156,30 @@ public class StreamPlayerGUI extends JFrame {
                 }
             }
             else if(e.getSource().equals(play)) {
-                String query = "SELECT * FROM songs WHERE ID=" + currentRow;
-                try {
-                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement(query);
-                    ResultSet r = p.executeQuery();
-                    if(r.next()) {
-                        String s = r.getString("Filepath");
-                        player.open(new File(s));
-                        player.play();
+                if(player.getStatus() == 1) {
+                    try {
+                        player.resume();
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
                     }
-                } catch (SQLException | BasicPlayerException throwables) {
-                    throwables.printStackTrace();
                 }
+                else if(player.getStatus() == -1) {
+                    String query = "SELECT * FROM songs WHERE ID=" + currentRow;
+                    try {
+                        PreparedStatement p = BasicPlayerTest.connection.prepareStatement(query);
+                        ResultSet r = p.executeQuery();
+                        if (r.next()) {
+                            String s = r.getString("Filepath");
+                            player.open(new File(s));
+                            player.play();
+                        }
+                    } catch (SQLException | BasicPlayerException throwables) {
+                        throwables.printStackTrace();
+                    }
+                }
+                else if(player.getStatus() == 1){
+                    System.out.println("Player is already playing");
+            }
             }
             else if(e.getSource().equals(pause)) {
                 try {
@@ -179,18 +192,15 @@ public class StreamPlayerGUI extends JFrame {
                 {
                     final JFileChooser fc = new JFileChooser();
                     int returnVal = fc.showOpenDialog(main);
-                    if (returnVal == JFileChooser.APPROVE_OPTION)
-                    {
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File file = fc.getSelectedFile();
                         //stringSelected = new JTextField(fc.getName());
                         path = file.getAbsolutePath();
                         filename = file.getName();
 
-                        try
-                        {
+                        try {
                             Mp3File song = new Mp3File(path);
-                            if (song.hasId3v2Tag())
-                            {
+                            if (song.hasId3v2Tag()) {
                                 ID3v2 id3v2tag = song.getId3v2Tag();
                                 title = id3v2tag.getTitle();
                                 artist = id3v2tag.getArtist();
@@ -198,48 +208,44 @@ public class StreamPlayerGUI extends JFrame {
                                 year = id3v2tag.getYear();
                             }
 
-                        } catch (IOException ioException) {
+                        } catch (IOException | UnsupportedTagException | InvalidDataException ioException) {
                             ioException.printStackTrace();
-                        } catch (UnsupportedTagException unsupportedTagException) {
-                            unsupportedTagException.printStackTrace();
-                        } catch (InvalidDataException invalidDataException) {
-                            invalidDataException.printStackTrace();
                         }
 
-                    }
-                    //System.out.println(path);
-                    //System.out.println(filename);
-                    //System.out.println(title);
-                    //System.out.println(artist);
-                    //System.out.println(genre);
-                    //System.out.println(year);
-                    id++;
-                    try {
-                        //stmt = (Statement) BasicPlayerTest.connection.createStatement();
+
+                        //System.out.println(path);
+                        //System.out.println(filename);
+                        //System.out.println(title);
+                        //System.out.println(artist);
+                        //System.out.println(genre);
+                        //System.out.println(year);
+                        id++;
+                        try {
+                            //stmt = (Statement) BasicPlayerTest.connection.createStatement();
                             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
-                        PreparedStatement preparedStatement = BasicPlayerTest.connection.prepareStatement(query1);
+                            PreparedStatement preparedStatement = BasicPlayerTest.connection.prepareStatement(query1);
 
-                        idString = Integer.toString(id);
+                            idString = Integer.toString(id);
 
-                        preparedStatement.setString(1, idString);
-                        preparedStatement.setString(2, title);
-                        preparedStatement.setString(3, genre);
-                        preparedStatement.setString(4, artist);
-                        preparedStatement.setString(5, year);
-                        preparedStatement.setString(6, path);
+                            preparedStatement.setString(1, idString);
+                            preparedStatement.setString(2, title);
+                            preparedStatement.setString(3, genre);
+                            preparedStatement.setString(4, artist);
+                            preparedStatement.setString(5, year);
+                            preparedStatement.setString(6, path);
 
-                        preparedStatement.executeUpdate();
-                        //stmt.executeUpdate(query1);
-                        //query1 = "SELECT title FROM songs";
-                        //ResultSet rs = stmt.executeQuery(query1);
-                        //System.out.println(rs);
-                    } catch (SQLException throwables)
-                    {
-                        throwables.printStackTrace();
+                            preparedStatement.executeUpdate();
+                            //stmt.executeUpdate(query1);
+                            //query1 = "SELECT title FROM songs";
+                            //ResultSet rs = stmt.executeQuery(query1);
+                            //System.out.println(rs);
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                        numRows++;
+                        Object[] newSong = {idString, title, genre, artist, year};
+                        model.addRow(newSong);
                     }
-                    numRows++;
-                    Object[] newSong = {idString, title, genre, artist, year};
-                    model.addRow(newSong);
                 }
             }
             else if(e.getSource().equals(delete)) {
@@ -266,7 +272,7 @@ public class StreamPlayerGUI extends JFrame {
                         columnList[1] = songList.getString("Title");
                         columnList[2] = songList.getString("Genre");
                         columnList[3] = songList.getString("Artist");
-                        columnList[4] = songList.getString("Filepath");
+                        columnList[4] = songList.getString("Year");
                         model.addRow(columnList);
                     }
                 } catch (SQLException throwables) {
@@ -296,6 +302,32 @@ public class StreamPlayerGUI extends JFrame {
                     throwables.printStackTrace();
                 }
                 System.exit(0);
+            }
+            else if(e.getSource().equals(skipForward)) {
+                try {
+                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentRow + 1));
+                    ResultSet r = p.executeQuery();
+                    if(r.next()) {
+                        String fp = r.getString("Filepath");
+                        player.open(new File(fp));
+                        player.play();
+                    }
+                } catch (SQLException | BasicPlayerException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+            else if(e.getSource().equals(skipBack)) {
+                try {
+                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentRow - 1));
+                    ResultSet r = p.executeQuery();
+                    if(r.next()) {
+                        String fp = r.getString("Filepath");
+                        player.open(new File(fp));
+                        player.play();
+                    }
+                } catch (SQLException | BasicPlayerException throwables) {
+                    throwables.printStackTrace();
+                }
             }
         }
     }
