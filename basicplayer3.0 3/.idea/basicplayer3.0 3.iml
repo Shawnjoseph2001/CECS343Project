@@ -4,6 +4,8 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" exported="" name="mysql-connector-java-8.0.21" level="project" />
+    <orderEntry type="library" exported="" name="mp3agic-0.8.1" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

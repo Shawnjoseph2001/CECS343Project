@@ -1,30 +1,23 @@
 package javazoom.jlgui.basicplayer;
 
 import javax.swing.*;
-import javax.swing.table.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
 import java.sql.*;
-import java.util.logging.*;
-import com.mpatric.mp3agic.ID3v1Genres;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javazoom.spi.mpeg.sampled.file.tag.MP3Tag;
 
 public class StreamPlayerGUI extends JFrame {
     BasicPlayer player;
     JPanel main;
     JScrollPane scrollPane;
     JButton play;
+    JButton stop;
     JButton pause;
     JButton skipForward;
     JButton skipBack;
@@ -40,6 +33,14 @@ public class StreamPlayerGUI extends JFrame {
     String artist;
     String genre;
     String year;
+    JMenuBar menuBar;
+    JMenu file;
+    JMenuItem addSong;
+    JMenuItem delete;
+    JMenuItem open;
+    JMenuItem exit;
+    String[] columns;
+
     Statement stmt = null;
     int numRows;
     DefaultTableModel model;
@@ -49,8 +50,21 @@ public class StreamPlayerGUI extends JFrame {
         main = new JPanel();
         play = new JButton("Play");
         pause = new JButton("Pause");
+        stop = new JButton("Stop");
         skipForward = new JButton(" >> ");
         skipBack = new JButton(" << ");
+        menuBar = new JMenuBar();
+        file = new JMenu("File");
+        menuBar.add(file);
+        addSong = new JMenuItem("Add song");
+        delete = new JMenuItem("Delete song");
+        open = new JMenuItem("Open song");
+        exit = new JMenuItem("Exit Program");
+        file.add(addSong);
+        file.add(delete);
+        file.add(open);
+        file.add(exit);
+
 
         String[] columns = {"ID", "Title", "Genre", "Artist", "Year"};
         //Object[][] data = {{"", "", "", "", ""}};
@@ -65,31 +79,30 @@ public class StreamPlayerGUI extends JFrame {
         pause.addActionListener(new ButtonListener());
         skipForward.addActionListener(new ButtonListener());
         skipBack.addActionListener(new ButtonListener());
+        stop.addActionListener(new ButtonListener());
+        addSong.addActionListener(new ButtonListener());
+        delete.addActionListener(new ButtonListener());
+        open.addActionListener(new ButtonListener());
 
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                currentRow = j.getSelectedRow();
-                System.out.println(currentRow);
+                currentRow = Integer.parseInt((String)j.getValueAt(j.getSelectedRow(), 0));
+                System.out.println(j.getValueAt(j.getSelectedRow(), 0));
             }
         };
-
-        // j.addMouseListener(m);
-        // j.add(jb);
+        j.addMouseListener(m);
         nowPlaying = new JLabel("Now playing: nothing");
-        //this.add(nowPlaying);
         scrollPane = new JScrollPane(j);
         scrollPane.setPreferredSize(new Dimension(475, 100));
         this.setTitle("StreamPlayer by Shawn Joseph and Amanda Jones");//change the name to yours
         this.add(main);
-
         main.add(skipBack);
         main.add(play);
         main.add(pause);
+        main.add(stop);
         main.add(skipForward);
         main.add(scrollPane);
-
-        MenuBar menu = new MenuBar();
-        this.setJMenuBar(menu.createMenuBar());
+        this.setJMenuBar(menuBar);
 
         main.addMouseListener(new PopClickListener());
 
@@ -119,26 +132,34 @@ public class StreamPlayerGUI extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final JFileChooser fc = new JFileChooser();
-            int returnVal = fc.showOpenDialog(main);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                stringSelected = new JTextField(fc.getName());
+            System.out.println();
+            if(e.getSource().equals(stop)) {
+                try {
+                    player.stop();
+                } catch (BasicPlayerException basicPlayerException) {
+                    basicPlayerException.printStackTrace();
+                }
             }
-
-
-        }
-    }
-    class MenuBar
-    {
-        public JMenuBar createMenuBar()
-        {
-            JMenuBar menuBar = new JMenuBar();
-            JMenu file = new JMenu("File");
-
-            JMenuItem add = new JMenuItem(new AbstractAction("Add song")
-            {
-                public void actionPerformed(ActionEvent e)
+            else if(e.getSource().equals(play)) {
+                String query = "SELECT Filepath FROM songs WHERE ID=" + currentRow;
+                try {
+                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement(query);
+                    ResultSet r = p.executeQuery();
+                    String s = r.getString(1);
+                    player.open(new File(s));
+                    player.play();
+                } catch (SQLException | BasicPlayerException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+            else if(e.getSource().equals(pause)) {
+                try {
+                    player.pause();
+                } catch (BasicPlayerException basicPlayerException) {
+                    basicPlayerException.printStackTrace();
+                }
+            }
+            else if(e.getSource().equals(addSong)) {
                 {
                     final JFileChooser fc = new JFileChooser();
                     int returnVal = fc.showOpenDialog(main);
@@ -178,9 +199,8 @@ public class StreamPlayerGUI extends JFrame {
                     //System.out.println(year);
                     id++;
                     try {
-
                         //stmt = (Statement) BasicPlayerTest.connection.createStatement();
-                        String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?)";
+                            String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
                         PreparedStatement preparedStatement = BasicPlayerTest.connection.prepareStatement(query1);
 
                         idString = Integer.toString(id);
@@ -205,70 +225,47 @@ public class StreamPlayerGUI extends JFrame {
                     Object[] newSong = {idString, title, genre, artist, year};
                     model.addRow(newSong);
                 }
-            });
+            }
+            else if(e.getSource().equals(delete)) {
+                int currentSelectedRow = j.getSelectedRow();
+                try {
+                    String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
+                    String query = "DELETE FROM songs WHERE ID = ?";
+                    PreparedStatement preparedStmt = BasicPlayerTest.connection.prepareStatement(query);
+                    preparedStmt.setString(1, deleteByID);
+                    preparedStmt.execute();
 
-            JMenuItem delete = new JMenuItem(new AbstractAction("Delete song")
-            {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    int currentSelectedRow = j.getSelectedRow();
-                    try {
-                        String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
-                        String query = "DELETE FROM songs WHERE ID = ?";
-                        PreparedStatement preparedStmt = BasicPlayerTest.connection.prepareStatement(query);
-                        preparedStmt.setString(1, deleteByID);
-                        preparedStmt.execute();
-
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
-                    }
-
-                    model.removeRow(currentSelectedRow);
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                 }
-            });
 
-            JMenuItem open = new JMenuItem(new AbstractAction("Open song")
-            {
-                public void actionPerformed(ActionEvent e)
-                {
+                model.removeRow(currentSelectedRow);
+                model.removeRow(currentSelectedRow);
+            }
+            else if(e.getSource().equals(open)) {
                     final JFileChooser fc = new JFileChooser();
                     String fileName = "";
                     int returnVal = fc.showOpenDialog(main);
                     if (returnVal == JFileChooser.APPROVE_OPTION)
                     {
                         File file = fc.getSelectedFile();
-                        fileName = fc.getSelectedFile().toURI().toString();
+                        try {
+                            player.open(file);
+                        } catch (BasicPlayerException basicPlayerException) {
+                            basicPlayerException.printStackTrace();
+                        }
                     }
-                    Media media = new Media(fileName);
-                    MediaPlayer mediaPlayer = new MediaPlayer(media);
-                    mediaPlayer.play();
                     //System.out.println(path);
+            }
+            else if(e.getSource().equals(exit)) {
+                try {
+                    BasicPlayerTest.connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                 }
-            });
-
-            JMenuItem exit = new JMenuItem(new AbstractAction("Exit application") {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    try {
-                        BasicPlayerTest.connection.close();
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
-                    }
-                    System.exit(0);
-                }
-            });
-
-            file.add(add);
-            file.add(delete);
-            file.add(open);
-            file.add(exit);
-            menuBar.add(file);
-
-            return menuBar;
+                System.exit(0);
+            }
         }
     }
-
 }
 

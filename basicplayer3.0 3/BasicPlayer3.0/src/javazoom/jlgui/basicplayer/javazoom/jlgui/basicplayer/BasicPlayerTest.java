@@ -44,22 +44,11 @@ public class BasicPlayerTest implements BasicPlayerListener
 	 * Entry point.
 	 * @param args filename to play.
 	 */
-	public static void main(String[] args)
-	{
-		String url = "jdbc:mysql://localhost:3306/mp3player";
+	public static void main(String[] args) throws SQLException {
+		String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC";
 		String username = "root";
-		String password = "musicplayer123";
-
-		try
-		{
-			connection = DriverManager.getConnection(url, username, password);
-			System.out.println("Connection established successfully");
-		}
-		catch (SQLException e)
-		{
-			throw new IllegalStateException("Unable to connect to the database " + e.getMessage());
-		}
-
+		String password = "potato";
+		connection = DriverManager.getConnection(url, username, password);
 		StreamPlayerGUI s = new StreamPlayerGUI();
 	}
 	
