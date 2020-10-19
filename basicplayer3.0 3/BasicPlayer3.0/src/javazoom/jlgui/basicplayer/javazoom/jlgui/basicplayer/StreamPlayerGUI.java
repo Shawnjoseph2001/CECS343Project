@@ -237,6 +237,27 @@ public class StreamPlayerGUI extends JFrame {
                         } catch (IOException | UnsupportedTagException | InvalidDataException ioException) {
                             ioException.printStackTrace();
                         }
+                        try{
+                            PreparedStatement test = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+                            ResultSet song = test.executeQuery();
+                            while(song.next()) {
+                                String[] columnList = new String[5];
+                                columnList[0] = song.getString("ID");
+                                columnList[1] = song.getString("Title");
+                                columnList[2] = song.getString("Genre");
+                                columnList[3] = song.getString("Artist");
+                                columnList[4] = song.getString("Year");
+                                String name = song.getString("Title");
+                                if (name.equals(title))
+                                {
+                                    System.out.println("Song is already in library");
+                                    return;
+                                }
+                            }
+
+                        }catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
 
 
                         //System.out.println(path);
