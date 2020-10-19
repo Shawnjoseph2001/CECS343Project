@@ -43,15 +43,17 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem delete2;
     JMenuItem open2;
     JMenuItem exit2;
-    String[] columns;
     int currentSongID;
     JPopupMenu popupMenu;
-
-    Statement stmt = null;
+    public static Connection connection;
     int numRows;
     DefaultTableModel model;
 
     public StreamPlayerGUI() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC";
+        String username = "root";
+        String password = "potato";
+        connection = DriverManager.getConnection(url, username, password);
         currentSongID = 0;
         player = new BasicPlayer();
         main = new JPanel();
@@ -91,7 +93,6 @@ public class StreamPlayerGUI extends JFrame {
         model = new DefaultTableModel(numRows, columns.length);
         model.setColumnIdentifiers(columns);
         j = new JTable(model);
-
         stringSelected = new JFormattedTextField("No string assigned");
         play.addActionListener(new ButtonListener());
         pause.addActionListener(new ButtonListener());
@@ -103,7 +104,7 @@ public class StreamPlayerGUI extends JFrame {
         open.addActionListener(new ButtonListener());
         exit.addActionListener(new ButtonListener());
 
-        popupMenu.addMouseListener(new PopClickListener());
+        //popupMenu.addMouseListener(new PopClickListener());
 
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -126,10 +127,11 @@ public class StreamPlayerGUI extends JFrame {
         this.setJMenuBar(menuBar);
         main.add(popupMenu);
 
-        scrollPane.addMouseListener(new PopClickListener());
+        j.addMouseListener(new PopClickListener());
         main.addMouseListener(new PopClickListener());
 
-        PreparedStatement populate = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+
+        PreparedStatement populate = connection.prepareStatement("SELECT * FROM songs");
         ResultSet songList = populate.executeQuery();
         while(songList.next()) {
             String[] columnList = new String[5];
@@ -191,7 +193,7 @@ public class StreamPlayerGUI extends JFrame {
                 else if(player.getStatus() == -1) {
                     String query = "SELECT * FROM songs WHERE ID=" + currentRow;
                     try {
-                        PreparedStatement p = BasicPlayerTest.connection.prepareStatement(query);
+                        PreparedStatement p = connection.prepareStatement(query);
                         ResultSet r = p.executeQuery();
                         if (r.next()) {
                             String s = r.getString("Filepath");
@@ -203,7 +205,7 @@ public class StreamPlayerGUI extends JFrame {
                         throwables.printStackTrace();
                     }
                 }
-                else if(player.getStatus() == 1){
+                else if(player.getStatus() == 0){
                     System.out.println("Player is already playing");
             }
             }
@@ -238,17 +240,10 @@ public class StreamPlayerGUI extends JFrame {
                             ioException.printStackTrace();
                         }
                         try{
-                            PreparedStatement test = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+                            PreparedStatement test = connection.prepareStatement("SELECT * FROM songs");
                             ResultSet song = test.executeQuery();
                             while(song.next()) {
-                                String[] columnList = new String[5];
-                                columnList[0] = song.getString("ID");
-                                columnList[1] = song.getString("Title");
-                                columnList[2] = song.getString("Genre");
-                                columnList[3] = song.getString("Artist");
-                                columnList[4] = song.getString("Year");
-                                String name = song.getString("Title");
-                                if (name.equals(title))
+                                if (song.getString("Title").equals(title))
                                 {
                                     System.out.println("Song is already in library");
                                     return;
@@ -270,7 +265,7 @@ public class StreamPlayerGUI extends JFrame {
                         try {
                             //stmt = (Statement) BasicPlayerTest.connection.createStatement();
                             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
-                            PreparedStatement preparedStatement = BasicPlayerTest.connection.prepareStatement(query1);
+                            PreparedStatement preparedStatement = connection.prepareStatement(query1);
 
                             idString = Integer.toString(id);
 
@@ -300,7 +295,7 @@ public class StreamPlayerGUI extends JFrame {
                 try {
                     String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
                     String query = "DELETE FROM songs WHERE ID = ?";
-                    PreparedStatement preparedStmt = BasicPlayerTest.connection.prepareStatement(query);
+                    PreparedStatement preparedStmt = connection.prepareStatement(query);
                     preparedStmt.setString(1, deleteByID);
                     preparedStmt.execute();
 
@@ -311,7 +306,7 @@ public class StreamPlayerGUI extends JFrame {
                     model.removeRow(i);
                 }
                 try {
-                    PreparedStatement populate = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+                    PreparedStatement populate = connection.prepareStatement("SELECT * FROM songs");
                     ResultSet songList = populate.executeQuery();
                     while(songList.next()) {
                         String[] columnList = new String[5];
@@ -329,7 +324,6 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if(e.getSource().equals(open) || e.getSource().equals(open2)) {
                     final JFileChooser fc = new JFileChooser();
-                    String fileName = "";
                     int returnVal = fc.showOpenDialog(main);
                     if (returnVal == JFileChooser.APPROVE_OPTION)
                     {
@@ -344,7 +338,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if(e.getSource().equals(exit) || e.getSource().equals(exit2)) {
                 try {
-                    BasicPlayerTest.connection.close();
+                    connection.close();
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -352,7 +346,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if(e.getSource().equals(skipForward)) {
                 try {
-                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentSongID + 1));
+                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentSongID + 1));
                     ResultSet r = p.executeQuery();
                     if(r.next()) {
                         String fp = r.getString("Filepath");
@@ -365,7 +359,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if(e.getSource().equals(skipBack)) {
                 try {
-                    PreparedStatement p = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentSongID - 1));
+                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID=" + (currentSongID - 1));
                     ResultSet r = p.executeQuery();
                     if(r.next()) {
                         String fp = r.getString("Filepath");
@@ -395,13 +389,16 @@ public class StreamPlayerGUI extends JFrame {
         }
             else if(e.getSource().equals(exit)) {
                 try {
-                    BasicPlayerTest.connection.close();
+                    connection.close();
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
                 System.exit(0);
             }
             }
+    }
+    public static void main(String[] args) throws SQLException {
+        StreamPlayerGUI s = new StreamPlayerGUI();
     }
 }
 
