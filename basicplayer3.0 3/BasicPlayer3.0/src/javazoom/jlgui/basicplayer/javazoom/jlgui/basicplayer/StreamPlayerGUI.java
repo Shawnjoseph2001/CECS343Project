@@ -3,8 +3,15 @@ package javazoom.jlgui.basicplayer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.io.File;
+import java.util.List;
 import java.io.IOException;
 import java.sql.*;
 import com.mpatric.mp3agic.ID3v2;
@@ -430,7 +437,7 @@ public class StreamPlayerGUI extends JFrame {
                             }
 
                             try {
-                                PreparedStatement test = BasicPlayerTest.connection.prepareStatement("SELECT * FROM songs");
+                                PreparedStatement test = connection.prepareStatement("SELECT * FROM songs");
                                 ResultSet song = test.executeQuery();
                                 while (song.next()) {
                                     String[] columnList = new String[5];
@@ -448,7 +455,7 @@ public class StreamPlayerGUI extends JFrame {
                             try {
                                 //stmt = (Statement) BasicPlayerTest.connection.createStatement();
                                 String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
-                                PreparedStatement preparedStatement = BasicPlayerTest.connection.prepareStatement(query1);
+                                PreparedStatement preparedStatement = connection.prepareStatement(query1);
 
                                 idString = Integer.toString(id);
 
