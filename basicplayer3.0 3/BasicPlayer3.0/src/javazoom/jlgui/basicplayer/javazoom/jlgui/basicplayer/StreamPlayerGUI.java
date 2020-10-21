@@ -338,6 +338,19 @@ void addSongFromFile(File file) {
                 }
             }
             else if(e.getSource().equals(delete) || e.getSource().equals(delete2)) {
+		int currentSelectedRow = j.getSelectedRow();
+                try {
+                    String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
+                    String query = "DELETE FROM songs WHERE ID = ?";
+                    PreparedStatement preparedStmt = connection.prepareStatement(query);
+                    preparedStmt.setString(1, deleteByID);
+                    preparedStmt.execute();
+
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+                model.removeRow(currentSelectedRow);
+		numRows--;
 
             }
             else if(e.getSource().equals(open) || e.getSource().equals(open2)) {
