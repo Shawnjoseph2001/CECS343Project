@@ -321,24 +321,30 @@ void addSongFromFile(File file) {
                     }
                 }
             }
-            else if(e.getSource().equals(delete) || e.getSource().equals(delete2)) {
+            else if(e.getSource().equals(delete) || e.getSource().equals(delete2)) 
+	    {
+		deleteSelectedSong();
 		
 
             }
-            else if(e.getSource().equals(open) || e.getSource().equals(open2)) {
-                    final JFileChooser fc = new JFileChooser();
-                    int returnVal = fc.showOpenDialog(main);
-                    if (returnVal == JFileChooser.APPROVE_OPTION)
-                    {
-                        File file = fc.getSelectedFile();
-                        try {
-                            player.open(file);
-                        } catch (BasicPlayerException basicPlayerException) {
-                            basicPlayerException.printStackTrace();
-                        }
+else if(e.getSource().equals(open) || e.getSource().equals(open2)) {
+                final JFileChooser fc = new JFileChooser();
+                int returnVal = fc.showOpenDialog(main);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    try {
+                        player.open(file);
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
                     }
-                    //System.out.println(path);
+                    try {
+                        player.play();
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
+                    }
+                }
             }
+           
             else if(e.getSource().equals(exit) || e.getSource().equals(exit2)) {
                 try {
                     connection.close();
@@ -373,33 +379,7 @@ void addSongFromFile(File file) {
                     throwables.printStackTrace();
                 }
             }
-            else if(e.getSource().equals(open)) {
-                final JFileChooser fc = new JFileChooser();
-                int returnVal = fc.showOpenDialog(main);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
-                    try {
-                        player.open(file);
-                    } catch (BasicPlayerException basicPlayerException) {
-                        basicPlayerException.printStackTrace();
-                    }
-                    try {
-                        player.play();
-                    } catch (BasicPlayerException basicPlayerException) {
-                        basicPlayerException.printStackTrace();
-                    }
-                }
-        }
-            else if(e.getSource().equals(exit)) {
-                try {
-                    connection.close();
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                }
-                System.exit(0);
-            }
-            }
-    }
+
     class MyDropTarget extends DropTarget
     {
         public void drop(DropTargetDropEvent event) {
