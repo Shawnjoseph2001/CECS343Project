@@ -273,34 +273,18 @@ void addSongFromFile(File file) {
 
     void deleteSelectedSong() {
         int currentSelectedRow = j.getSelectedRow();
-        try {
-            String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
-            String query = "DELETE FROM songs WHERE ID = ?";
-            PreparedStatement preparedStmt = connection.prepareStatement(query);
-            preparedStmt.setString(1, deleteByID);
-            preparedStmt.execute();
+                try {
+                    String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
+                    String query = "DELETE FROM songs WHERE ID = ?";
+                    PreparedStatement preparedStmt = connection.prepareStatement(query);
+                    preparedStmt.setString(1, deleteByID);
+                    preparedStmt.execute();
 
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        for(int i = 0; i < model.getRowCount(); i++) {
-            model.removeRow(i);
-        }
-        try {
-            PreparedStatement populate = connection.prepareStatement("SELECT * FROM songs");
-            ResultSet songList = populate.executeQuery();
-            while(songList.next()) {
-                String[] columnList = new String[5];
-                columnList[0] = songList.getString("ID");
-                columnList[1] = songList.getString("Title");
-                columnList[2] = songList.getString("Genre");
-                columnList[3] = songList.getString("Artist");
-                columnList[4] = songList.getString("Year");
-                model.addRow(columnList);
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+                model.removeRow(currentSelectedRow);
+		numRows--;
 
     }
     class ButtonListener implements ActionListener
@@ -338,19 +322,7 @@ void addSongFromFile(File file) {
                 }
             }
             else if(e.getSource().equals(delete) || e.getSource().equals(delete2)) {
-		int currentSelectedRow = j.getSelectedRow();
-                try {
-                    String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
-                    String query = "DELETE FROM songs WHERE ID = ?";
-                    PreparedStatement preparedStmt = connection.prepareStatement(query);
-                    preparedStmt.setString(1, deleteByID);
-                    preparedStmt.execute();
-
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                }
-                model.removeRow(currentSelectedRow);
-		numRows--;
+		
 
             }
             else if(e.getSource().equals(open) || e.getSource().equals(open2)) {
