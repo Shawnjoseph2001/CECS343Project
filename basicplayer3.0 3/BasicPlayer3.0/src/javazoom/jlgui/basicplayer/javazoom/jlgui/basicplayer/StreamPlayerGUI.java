@@ -408,7 +408,6 @@ void addSongFromFile(File file) {
             for (DataFlavor flavor : flavors) {
                 if (flavor.isFlavorJavaFileListType())
                 {
-                    // this is where we get after dropping a file or directory
                     event.acceptDrop(DnDConstants.ACTION_COPY);
 
                     try {
