@@ -85,8 +85,6 @@ public class StreamPlayerGUI extends JFrame {
         file.add(open);
         file.add(exit);
         skipForward.addActionListener(new ButtonListener());
-        skipBack.addActionListener(new ButtonListener());
-
         popupMenu = new JPopupMenu();
         popupMenu.add(add2);
         popupMenu.add(delete2);
@@ -103,10 +101,10 @@ public class StreamPlayerGUI extends JFrame {
         stringSelected = new JFormattedTextField("No string assigned");
         play.addActionListener(new ButtonListener());
         pause.addActionListener(new ButtonListener());
-        skipForward.addActionListener(new ButtonListener());
         skipBack.addActionListener(new ButtonListener());
         stop.addActionListener(new ButtonListener());
         addSong.addActionListener(new ButtonListener());
+        add2.addActionListener(new ButtonListener());
         delete.addActionListener(new ButtonListener());
         delete2.addActionListener(new ButtonListener());
         open.addActionListener(new ButtonListener());
@@ -342,24 +340,26 @@ void addSongFromFile(File file) {
                 System.exit(0);
             } else if (e.getSource().equals(skipForward)) {
                 try {
-                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID >" + currentSongID +  "ORDER BY ID desc");
+                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID >" + currentSongID +  " ORDER BY ID desc");
                     ResultSet r = p.executeQuery();
                     if (r.next()) {
                         String fp = r.getString("Filepath");
                         player.open(new File(fp));
                         player.play();
+                        currentSongID = r.getInt("ID");
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
                 }
             } else if (e.getSource().equals(skipBack)) {
                 try {
-                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID <" + currentSongID +  "ORDER BY ID asc");
+                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID <" + currentSongID +  " ORDER BY ID asc");
                     ResultSet r = p.executeQuery();
                     if (r.next()) {
                         String fp = r.getString("Filepath");
                         player.open(new File(fp));
                         player.play();
+                        currentSongID = r.getInt("ID");
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
