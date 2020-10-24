@@ -59,9 +59,10 @@ public class StreamPlayerGUI extends JFrame {
     DefaultTableModel model;
 
     public StreamPlayerGUI() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/mp3player";
+        String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC", password = "potato123"; //Shawn's DB info, use other line on Amanda's PC
+        //String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC", password = "potato123";//Amanda's DB info, use other line on Shawn's PC
+        //BTW Amanda change the above line so it has the correct info for your computer and then delete this comment
         String username = "root";
-        String password = "musicplayer123";
         connection = DriverManager.getConnection(url, username, password);
 
         currentSongID = 0;
@@ -89,8 +90,6 @@ public class StreamPlayerGUI extends JFrame {
         file.add(delete);
         file.add(open);
         file.add(exit);
-        skipForward.addActionListener(new ButtonListener());
-        skipBack.addActionListener(new ButtonListener());
 
         popupMenu = new JPopupMenu();
         popupMenu.add(add2);
@@ -199,7 +198,7 @@ public class StreamPlayerGUI extends JFrame {
                 basicPlayerException.printStackTrace();
             }
         }
-        else if(player.getStatus() == -1) {
+        else if(player.getStatus() == -1 || player.getStatus() == 2) {
             String query = "SELECT * FROM songs WHERE ID=" + currentRow;
             try {
                 PreparedStatement p = connection.prepareStatement(query);
@@ -298,6 +297,7 @@ public class StreamPlayerGUI extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            System.out.print(""); //convenient debugger entry spot
             if (e.getSource().equals(stop)) {
                 try {
                     player.stop();
@@ -346,7 +346,8 @@ public class StreamPlayerGUI extends JFrame {
                 System.exit(0);
             } else if (e.getSource().equals(skipForward)) {
                 try {
-                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID >" + currentSongID + " ORDER BY ID asc");
+                    String query = "SELECT * FROM songs WHERE ID > " + currentSongID + " ORDER BY ID asc";
+                    PreparedStatement p = connection.prepareStatement(query);
                     ResultSet r = p.executeQuery();
                     if (r.next()) {
                         currentSongID = r.getInt("ID");
@@ -359,10 +360,12 @@ public class StreamPlayerGUI extends JFrame {
                 }
             } else if (e.getSource().equals(skipBack)) {
                 try {
-                    PreparedStatement p = connection.prepareStatement("SELECT * FROM songs WHERE ID <" + currentSongID + " ORDER BY ID desc");
+                    String query = "SELECT * FROM songs WHERE ID < " + currentSongID + " ORDER BY ID desc";
+                    PreparedStatement p = connection.prepareStatement(query);
                     ResultSet r = p.executeQuery();
                     if (r.next()) {
-                        currentSongID = r.getInt("ID");
+                        String currentSongtemp = r.getString("ID");
+                        currentSongID = Integer.parseInt(currentSongtemp);
                         String fp = r.getString("Filepath");
                         player.open(new File(fp));
                         player.play();
