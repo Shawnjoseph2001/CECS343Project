@@ -360,6 +360,15 @@ public class StreamPlayerGUI extends JFrame {
                         player.open(new File(fp));
                         player.play();
                         s.setTitle(r.getString("Title"));
+                        int nextIndex = -1;
+                        for(int i = 0; i < j.getRowCount(); i++) {
+                            if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
+                                nextIndex = i;
+                            }
+                        }
+                        if(nextIndex > -1) {
+                            j.setRowSelectionInterval(nextIndex, nextIndex);
+                        }
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -376,6 +385,15 @@ public class StreamPlayerGUI extends JFrame {
                         player.open(new File(fp));
                         player.play();
                         s.setTitle(r.getString("Title"));
+                        int nextIndex = -1;
+                        for(int i = 0; i < j.getRowCount(); i++) {
+                            if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
+                                nextIndex = i;
+                            }
+                        }
+                        if(nextIndex > -1) {
+                            j.setRowSelectionInterval(nextIndex, nextIndex);
+                        }
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
