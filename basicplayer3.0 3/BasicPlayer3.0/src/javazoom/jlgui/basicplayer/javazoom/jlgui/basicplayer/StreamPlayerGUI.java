@@ -20,6 +20,7 @@ import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
 
 public class StreamPlayerGUI extends JFrame {
+    static StreamPlayerGUI s;
         BasicPlayer player;
     JPanel main;
     JScrollPane scrollPane;
@@ -60,8 +61,7 @@ public class StreamPlayerGUI extends JFrame {
 
     public StreamPlayerGUI() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC", password = "potato123"; //Shawn's DB info, use other line on Amanda's PC
-        //String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC", password = "potato123";//Amanda's DB info, use other line on Shawn's PC
-        //BTW Amanda change the above line so it has the correct info for your computer and then delete this comment
+        //String url = "jdbc:mysql://localhost:3306/mp3player", password = "musicplayer123";//Amanda's DB info, use other line on Shawn's PC
         String username = "root";
         connection = DriverManager.getConnection(url, username, password);
 
@@ -139,6 +139,7 @@ public class StreamPlayerGUI extends JFrame {
         scrollPane.setPreferredSize(new Dimension(475, 100));
         this.setTitle("StreamPlayer by Shawn Joseph and Amanda Jones");//change the name to yours
         this.add(main);
+        //this.add(nowPlaying);
         main.add(scrollPane);
         this.setJMenuBar(menuBar);
         main.add(skipBack);
@@ -204,10 +205,12 @@ public class StreamPlayerGUI extends JFrame {
                 PreparedStatement p = connection.prepareStatement(query);
                 ResultSet r = p.executeQuery();
                 if (r.next()) {
-                    String s = r.getString("Filepath");
+                    String st = r.getString("Filepath");
                     currentSongID = r.getInt("ID");
-                    player.open(new File(s));
+                    player.open(new File(st));
                     player.play();
+                    s.setTitle(r.getString("Title"));
+
                 }
             } catch (SQLException | BasicPlayerException throwables) {
                 throwables.printStackTrace();
@@ -301,6 +304,7 @@ public class StreamPlayerGUI extends JFrame {
             if (e.getSource().equals(stop)) {
                 try {
                     player.stop();
+                    s.setTitle("Not Playing");
                 } catch (BasicPlayerException basicPlayerException) {
                     basicPlayerException.printStackTrace();
                 }
@@ -333,6 +337,7 @@ public class StreamPlayerGUI extends JFrame {
                     try {
                         player.open(file);
                         player.play();
+                        s.setTitle("Playing file " + file.getAbsolutePath());
                     } catch (BasicPlayerException basicPlayerException) {
                         basicPlayerException.printStackTrace();
                     }
@@ -346,7 +351,7 @@ public class StreamPlayerGUI extends JFrame {
                 System.exit(0);
             } else if (e.getSource().equals(skipForward)) {
                 try {
-                    String query = "SELECT * FROM songs WHERE ID > " + currentSongID + " ORDER BY ID asc";
+                    String query = "SELECT * FROM songs WHERE ID > " + currentSongID;
                     PreparedStatement p = connection.prepareStatement(query);
                     ResultSet r = p.executeQuery();
                     if (r.next()) {
@@ -354,6 +359,7 @@ public class StreamPlayerGUI extends JFrame {
                         String fp = r.getString("Filepath");
                         player.open(new File(fp));
                         player.play();
+                        s.setTitle(r.getString("Title"));
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -369,6 +375,7 @@ public class StreamPlayerGUI extends JFrame {
                         String fp = r.getString("Filepath");
                         player.open(new File(fp));
                         player.play();
+                        s.setTitle(r.getString("Title"));
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -387,9 +394,7 @@ public class StreamPlayerGUI extends JFrame {
                             try {
                                 @SuppressWarnings("unchecked")
                                 List<File> list = (List<File>) transferable.getTransferData(flavor);
-                                for (int i  = 0; i < list.size(); i++)
-                                {
-                                    File fil = list.get(i);
+                                for (File fil : list) {
                                     addSongFromFile(fil);
                                 }
 
@@ -408,7 +413,7 @@ public class StreamPlayerGUI extends JFrame {
 
             }
             public static void main (String[]args) throws SQLException {
-                StreamPlayerGUI s = new StreamPlayerGUI();
+                s = new StreamPlayerGUI();
             }
 
         }
