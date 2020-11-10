@@ -2,6 +2,7 @@ package javazoom.jlgui.basicplayer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -11,9 +12,10 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.io.File;
-import java.util.List;
 import java.io.IOException;
 import java.sql.*;
+import java.util.List;
+
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
@@ -21,9 +23,20 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 
 public class StreamPlayerGUI extends JFrame {
     static StreamPlayerGUI s;
-        BasicPlayer player;
+    BasicPlayer player;
     JPanel main;
+    JPanel subPanel;
+    JPanel subPanel2;
+    JSplitPane splitPane;
     JScrollPane scrollPane;
+
+    DefaultMutableTreeNode library;
+    DefaultMutableTreeNode playlist;
+    DefaultMutableTreeNode p;
+    JTree libTree;
+    JTree playTree;
+    JScrollPane treeView;
+
     JButton play;
     JButton stop;
     JButton pause;
@@ -51,6 +64,7 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem delete2;
     JMenuItem open2;
     JMenuItem exit2;
+    JMenuItem createPlaylist;
     String[] columns;
     int currentSongID;
     JPopupMenu popupMenu;
@@ -60,14 +74,20 @@ public class StreamPlayerGUI extends JFrame {
     DefaultTableModel model;
 
     public StreamPlayerGUI() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/Data?serverTimezone=UTC", password = "potato123"; //Shawn's DB info, use other line on Amanda's PC
-        //String url = "jdbc:mysql://localhost:3306/mp3player", password = "musicplayer123";//Amanda's DB info, use other line on Shawn's PC
+        String url = "jdbc:mysql://localhost:3306/mp3player";
         String username = "root";
+        String password = "musicplayer123";
         connection = DriverManager.getConnection(url, username, password);
 
         currentSongID = 0;
         player = new BasicPlayer();
+
         main = new JPanel();
+        subPanel = new JPanel();
+        //subPanel.setBackground(Color.BLUE);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, subPanel, main);
+        splitPane.setDividerLocation(100);
+
         play = new JButton("Play");
         pause = new JButton("Pause");
         stop = new JButton("Stop");
@@ -80,7 +100,7 @@ public class StreamPlayerGUI extends JFrame {
         delete = new JMenuItem("Delete song");
         open = new JMenuItem("Open song");
         exit = new JMenuItem("Exit Program");
-
+        createPlaylist = new JMenuItem("Create Playlist");
         add2 = new JMenuItem("Add song");
         delete2 = new JMenuItem("Delete song");
         open2 = new JMenuItem("Open song");
@@ -89,6 +109,7 @@ public class StreamPlayerGUI extends JFrame {
         file.add(addSong);
         file.add(delete);
         file.add(open);
+        file.add(createPlaylist);
         file.add(exit);
 
         popupMenu = new JPopupMenu();
@@ -119,7 +140,7 @@ public class StreamPlayerGUI extends JFrame {
         delete.addActionListener(new ButtonListener());
         open.addActionListener(new ButtonListener());
         exit.addActionListener(new ButtonListener());
-
+        createPlaylist.addActionListener(new ButtonListener());
         add2.addActionListener(new ButtonListener());
         delete2.addActionListener(new ButtonListener());
         open2.addActionListener(new ButtonListener());
@@ -138,7 +159,15 @@ public class StreamPlayerGUI extends JFrame {
         scrollPane = new JScrollPane(j);
         scrollPane.setPreferredSize(new Dimension(475, 100));
         this.setTitle("StreamPlayer by Shawn Joseph and Amanda Jones");//change the name to yours
-        this.add(main);
+        this.add(splitPane);
+
+        library = new DefaultMutableTreeNode("Library");
+        libTree = new JTree(library);
+        playlist = new DefaultMutableTreeNode("Playlists");
+        playTree = new JTree(playlist);
+        subPanel.add(libTree);
+        subPanel.add(playTree);
+        //this.add(main);
         //this.add(nowPlaying);
         main.add(scrollPane);
         this.setJMenuBar(menuBar);
@@ -399,39 +428,49 @@ public class StreamPlayerGUI extends JFrame {
                     throwables.printStackTrace();
                 }
             }
+            else if (e.getSource().equals(createPlaylist))
+            {
+                String playlistName = JOptionPane.showInputDialog("Enter a name for the playlist");
+                System.out.println(playlistName);
+                p = new DefaultMutableTreeNode(playlistName);
+
+                playlist.add(p);
+                System.out.println(playTree.toString());
+                subPanel.add(playTree);
+            }
         }
     }
-            class MyDropTarget extends DropTarget {
-                public void drop(DropTargetDropEvent event) {
-                    Transferable transferable = event.getTransferable();
-                    DataFlavor[] flavors = transferable.getTransferDataFlavors();
-                    for (DataFlavor flavor : flavors) {
-                        if (flavor.isFlavorJavaFileListType()) {
-                            event.acceptDrop(DnDConstants.ACTION_COPY);
+    class MyDropTarget extends DropTarget {
+        public void drop(DropTargetDropEvent event) {
+            Transferable transferable = event.getTransferable();
+            DataFlavor[] flavors = transferable.getTransferDataFlavors();
+            for (DataFlavor flavor : flavors) {
+                if (flavor.isFlavorJavaFileListType()) {
+                    event.acceptDrop(DnDConstants.ACTION_COPY);
 
-                            try {
-                                @SuppressWarnings("unchecked")
-                                List<File> list = (List<File>) transferable.getTransferData(flavor);
-                                for (File fil : list) {
-                                    addSongFromFile(fil);
-                                }
-
-                            } catch (UnsupportedFlavorException | IOException ex) {
-                                ex.printStackTrace();
-                                event.rejectDrop();
-                            }
-                            event.dropComplete(true);
-                            System.out.println("drop complete");
-                            return;
+                    try {
+                        @SuppressWarnings("unchecked")
+                        List<File> list = (List<File>) transferable.getTransferData(flavor);
+                        for (File fil : list) {
+                            addSongFromFile(fil);
                         }
+
+                    } catch (UnsupportedFlavorException | IOException ex) {
+                        ex.printStackTrace();
                         event.rejectDrop();
-
                     }
+                    event.dropComplete(true);
+                    System.out.println("drop complete");
+                    return;
                 }
+                event.rejectDrop();
 
             }
-            public static void main (String[]args) throws SQLException {
-                s = new StreamPlayerGUI();
-            }
-
         }
+
+    }
+    public static void main (String[]args) throws SQLException {
+        s = new StreamPlayerGUI();
+    }
+
+}
