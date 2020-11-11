@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -75,6 +76,7 @@ public class StreamPlayerGUI extends JFrame {
     int numRows;
     DefaultTableModel model;
     DefaultTreeModel defaultTreeModel;
+    TreeNode selectedNode;
 
     public StreamPlayerGUI() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/mp3player";
@@ -155,6 +157,11 @@ public class StreamPlayerGUI extends JFrame {
             public void mousePressed(MouseEvent e) {
                 currentRow = Integer.parseInt((String) j.getValueAt(j.getSelectedRow(), 0));
                 System.out.println(j.getValueAt(j.getSelectedRow(), 0));
+            }
+        };
+        MouseListener tableListener = new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                //TODO: get selected node in library, set to selectedNode
             }
         };
         j.addMouseListener(m);
