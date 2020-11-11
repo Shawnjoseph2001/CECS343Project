@@ -3,6 +3,8 @@ package javazoom.jlgui.basicplayer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -23,7 +25,7 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 
 public class StreamPlayerGUI extends JFrame {
     static StreamPlayerGUI s;
-    BasicPlayer player;
+    javazoom.jlgui.basicplayer.BasicPlayer player;
     JPanel main;
     JPanel subPanel;
     JPanel subPanel2;
@@ -72,6 +74,7 @@ public class StreamPlayerGUI extends JFrame {
     Statement stmt = null;
     int numRows;
     DefaultTableModel model;
+    DefaultTreeModel defaultTreeModel;
 
     public StreamPlayerGUI() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/mp3player";
@@ -179,6 +182,8 @@ public class StreamPlayerGUI extends JFrame {
 
         main.add(popupMenu);
 
+        defaultTreeModel = new DefaultTreeModel(playlist);
+        playTree.setModel(defaultTreeModel);
         j.addMouseListener(new PopClickListener());
         scrollPane.addMouseListener(new PopClickListener());
         main.addMouseListener(new PopClickListener());
@@ -437,6 +442,7 @@ public class StreamPlayerGUI extends JFrame {
                 playlist.add(p);
                 System.out.println(playTree.toString());
                 subPanel.add(playTree);
+                defaultTreeModel.reload();
             }
         }
     }
