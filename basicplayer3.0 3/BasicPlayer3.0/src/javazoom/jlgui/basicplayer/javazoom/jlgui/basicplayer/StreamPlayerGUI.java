@@ -29,7 +29,6 @@ public class StreamPlayerGUI extends JFrame {
     javazoom.jlgui.basicplayer.BasicPlayer player;
     JPanel main;
     JPanel subPanel;
-    JPanel subPanel2;
     JSplitPane splitPane;
     JScrollPane scrollPane;
 
@@ -39,7 +38,6 @@ public class StreamPlayerGUI extends JFrame {
     DefaultMutableTreeNode p;
     JTree libTree;
     JTree playTree;
-    JScrollPane treeView;
     JScrollPane playlistScrollp;
     JButton play;
     JButton stop;
@@ -50,7 +48,6 @@ public class StreamPlayerGUI extends JFrame {
     JTable j;
     JTable playlistT;
 
-    String tableName="";
     JLabel nowPlaying;
     int currentRow;
     String path = "";
@@ -74,10 +71,13 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem createPlaylist;
     JMenuItem newWindow;
     JMenuItem deletePlaylist;
+    JMenu addToPlaylist;
     String[] columns;
     int currentSongID;
     JPopupMenu popupMenu;
     JPopupMenu treePopUp;
+    JMenuItem pickPlaylist;
+
     public static Connection connection;
     Statement stmt = null;
     int numRows;
@@ -124,6 +124,8 @@ public class StreamPlayerGUI extends JFrame {
         newWindow = new JMenuItem("Open in new window");
         deletePlaylist = new JMenuItem("Delete Playlist");
 
+        addToPlaylist = new JMenu("Add to playlist");
+
         treePopUp = new JPopupMenu();
         treePopUp.add(newWindow);
         treePopUp.add(deletePlaylist);
@@ -139,6 +141,7 @@ public class StreamPlayerGUI extends JFrame {
         popupMenu.add(delete2);
         popupMenu.add(open2);
         popupMenu.add(exit2);
+        popupMenu.add(addToPlaylist);
 
         String[] columns = {"ID", "Title", "Genre", "Artist", "Year"};
         //Object[][] data = {{"", "", "", "", ""}};
@@ -167,6 +170,7 @@ public class StreamPlayerGUI extends JFrame {
         delete2.addActionListener(new ButtonListener());
         open2.addActionListener(new ButtonListener());
         exit2.addActionListener(new ButtonListener());
+        //addToPlaylist.addActionListener(new ButtonListener());
 
         //popupMenu.addMouseListener(new PopClickListener());
 
@@ -218,12 +222,7 @@ public class StreamPlayerGUI extends JFrame {
                     playlistScrollp.setPreferredSize(new Dimension(475, 100));
                     playlistScrollp.addMouseListener(new PopClickListener());
                     tab.addMouseListener(tableListener);
-                    main.remove(skipBack);
-                    main.remove(play);
-                    main.remove(pause);
-                    main.remove(stop);
-                    main.remove(skipForward);
-                    main.remove(scrollPane);
+                    main.removeAll();
                     main.add(playlistScrollp);
                     main.add(skipBack);
                     main.add(play);
@@ -241,20 +240,7 @@ public class StreamPlayerGUI extends JFrame {
             public void valueChanged(TreeSelectionEvent e)
             {
                 playTree.removeSelectionPath(playTree.getSelectionPath());
-                JTable remove = new JTable();
-                main.remove(skipBack);
-                main.remove(play);
-                main.remove(pause);
-                main.remove(stop);
-                main.remove(skipForward);
-                for (int i = 0; i < tables.size(); i++)
-                {
-                    if (tables.get(i).isShowing())
-                    {
-                        remove = tables.get(i);
-                    }
-                }
-                main.remove(remove);
+                main.removeAll();
                 main.add(scrollPane);
                 main.add(skipBack);
                 main.add(play);
@@ -435,12 +421,26 @@ public class StreamPlayerGUI extends JFrame {
         {
             Object[] newSong = {idString, title, genre, artist, year};
             model.addRow(newSong);
-            m.addRow(newSong);
+            for (int i = 1; i < tables.size(); i++)
+            {
+                if (tables.get(i).isShowing())
+                {
+                    DefaultTableModel a = (DefaultTableModel) tables.get(i).getModel();
+                    a.addRow(newSong);
+                }
+            }
         }
         else if (alreadyInLib)
         {
             Object[] newSong = {newid, title, genre, artist, year};
-            m.addRow(newSong);
+            for (int i = 1; i < tables.size(); i++)
+            {
+                if (tables.get(i).isShowing())
+                {
+                    DefaultTableModel a = (DefaultTableModel) tables.get(i).getModel();
+                    a.addRow(newSong);
+                }
+            }
         }
     }
 
@@ -579,6 +579,10 @@ public class StreamPlayerGUI extends JFrame {
                 playlistT = new JTable(m);
                 tables.add(playlistT);
 
+                pickPlaylist = new JMenuItem(playlistName);
+                addToPlaylist.add(pickPlaylist);
+                pickPlaylist.addActionListener(new ButtonListener());
+
                 TreePath tpath = new TreePath(p.getPath());
                 playTree.setSelectionPath(tpath);
             }
@@ -592,6 +596,11 @@ public class StreamPlayerGUI extends JFrame {
                 playTree.remove(index);
                 tables.remove(index);
                 defaultTreeModel.reload();
+                addToPlaylist.remove(pickPlaylist);
+            }
+            else if (e.getSource().equals(addToPlaylist))
+            {
+
             }
         }
     }
