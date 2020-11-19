@@ -78,6 +78,8 @@ public class StreamPlayerGUI extends JFrame {
     JPopupMenu treePopUp;
     JMenuItem pickPlaylist;
 
+    int playlistId;
+
     public static Connection connection;
     Statement stmt = null;
     int numRows;
@@ -598,8 +600,21 @@ public class StreamPlayerGUI extends JFrame {
                 defaultTreeModel.reload();
                 addToPlaylist.remove(pickPlaylist);
             }
-            else if (e.getSource().equals(addToPlaylist))
+            else if (e.getSource().equals(pickPlaylist))
             {
+                String node = pickPlaylist.getText();
+                for(int i = 0 ; i < playlist.getChildCount(); i++)
+                {
+                    if (node.equals(playlist.getChildAt(i).toString()));
+                    {
+                        System.out.println(i);
+                        playlistId = i+1;
+                    }
+                }
+                Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
+                        model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
+                DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
+                a.addRow(newRow);
 
             }
         }
