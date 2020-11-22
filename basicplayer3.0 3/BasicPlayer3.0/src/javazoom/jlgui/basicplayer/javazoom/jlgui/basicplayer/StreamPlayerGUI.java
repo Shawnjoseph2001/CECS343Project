@@ -91,6 +91,8 @@ public class StreamPlayerGUI extends JFrame {
     ArrayList<JTable> tables;
     ArrayList<JMenuItem> playlistArray;
 
+    JScrollPane scrollPane2;
+
     public StreamPlayerGUI() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/mp3player";
         String username = "root";
@@ -102,7 +104,6 @@ public class StreamPlayerGUI extends JFrame {
 
         main = new JPanel();
         subPanel = new JPanel();
-        //subPanel.setBackground(Color.BLUE);
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, subPanel, main);
         splitPane.setDividerLocation(100);
 
@@ -181,16 +182,21 @@ public class StreamPlayerGUI extends JFrame {
 
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                currentRow = Integer.parseInt((String) j.getValueAt(j.getSelectedRow(), 0));
-                System.out.println(j.getValueAt(j.getSelectedRow(), 0));
+                for (int i = 0; i  < tables.size(); i++)
+                {
+                    if (tables.get(i).isShowing())
+                    {
+                        currentRow = Integer.parseInt((String) tables.get(i).getValueAt(tables.get(i).getSelectedRow(), 0));
+                        System.out.println(tables.get(i).getValueAt(tables.get(i).getSelectedRow(), 0));
+                    }
+                }
             }
         };
         MouseListener tableListener = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 currentRow = Integer.parseInt((String) playlistT.getValueAt(playlistT.getSelectedRow(), 0));
                 System.out.println(playlistT.getValueAt(playlistT.getSelectedRow(), 0));
-                TreePath path = playTree.getPathForLocation(e.getX(), e.getY());
-                selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+                selectedNode = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
                 System.out.println(selectedNode.toString());
             }
         };
@@ -574,6 +580,15 @@ public class StreamPlayerGUI extends JFrame {
                 System.out.println(playlistName);
                 p = new DefaultMutableTreeNode(playlistName);
 
+                try {
+                    Statement stmt = connection.createStatement();
+                    String query = "CREATE TABLE " + playlistName + " (ID VARCHAR(100), " + "Title VARCHAR(100), " +
+                            "Genre VARCHAR(100), " + "Artist VARCHAR(100), " + "Year VARCHAR(100))";
+                    stmt.executeUpdate(query);
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+
                 playlist.add(p);
                 subPanel.add(playTree);
                 defaultTreeModel.reload();
@@ -606,6 +621,25 @@ public class StreamPlayerGUI extends JFrame {
                                                 model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
                                         DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
                                         a.addRow(newRow);
+
+                                        idString = (model.getValueAt(currentRow-1, 0)).toString();
+                                        title = (model.getValueAt(currentRow-1, 1)).toString();
+                                        genre = (model.getValueAt(currentRow-1, 2)).toString();
+                                        artist = (model.getValueAt(currentRow-1, 3)).toString();
+                                        year = (model.getValueAt(currentRow-1, 4)).toString();
+
+                                        try {
+                                            String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
+                                            PreparedStatement preparedStatement = connection.prepareStatement(query2);
+                                            preparedStatement.setString(1, idString);
+                                            preparedStatement.setString(2, title);
+                                            preparedStatement.setString(3, genre);
+                                            preparedStatement.setString(4, artist);
+                                            preparedStatement.setString(5, year);
+                                            preparedStatement.executeUpdate();
+                                        } catch (SQLException throwables) {
+                                            throwables.printStackTrace();
+                                        }
                                     }
                                 }
                             }
@@ -618,6 +652,33 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if (e.getSource().equals(newWindow))
             {
+                System.out.println("new window");
+                scrollPane2 = new JScrollPane();
+                scrollPane2.setPreferredSize(new Dimension(600, 500));
+                scrollPane2.setVisible(true);
+                JFrame frame = new JFrame ("Playlist Window");
+                frame.setSize(500, 500);
+                frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+                frame.add(scrollPane2);
+                frame.pack();
+                frame.setVisible (true);
+
+                frame.add(scrollPane2);
+                frame.setJMenuBar(menuBar);
+                frame.add(skipBack);
+                frame.add(play);
+                frame.add(pause);
+                frame.add(stop);
+                frame.add(skipForward);
+
+                frame.add(popupMenu);
+
+                DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                for(int i = 0; i < playlist.getChildCount(); i++) {
+                    if (playlist.getChildAt(i).equals(openPlaylist)) {
+                        scrollPane2.add(tables.get(i + 1));
+                    }
+                }
 
             }
             else if (e.getSource().equals(deletePlaylist))
@@ -636,6 +697,13 @@ public class StreamPlayerGUI extends JFrame {
                     {
                         addToPlaylist.remove(playlistArray.get(i));
                         playlistArray.remove(i);
+                    }
+                    try {
+                        Statement stmt = connection.createStatement();
+                        String query = "DROP TABLE IF EXISTS " + deleteNode.toString();
+                        stmt.executeUpdate(query);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
                     }
                 }
             }
