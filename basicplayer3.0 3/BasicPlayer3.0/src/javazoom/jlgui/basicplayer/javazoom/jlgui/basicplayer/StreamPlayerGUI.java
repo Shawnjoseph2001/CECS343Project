@@ -89,6 +89,7 @@ public class StreamPlayerGUI extends JFrame {
     TreeNode selectedNode;
 
     ArrayList<JTable> tables;
+    ArrayList<JMenuItem> playlistArray;
 
     public StreamPlayerGUI() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/mp3player";
@@ -269,6 +270,7 @@ public class StreamPlayerGUI extends JFrame {
 
         tables = new ArrayList<JTable>();
         tables.add(j);
+        playlistArray = new ArrayList<JMenuItem>();
 
         defaultTreeModel = new DefaultTreeModel(playlist);
         playTree.setModel(defaultTreeModel);
@@ -583,7 +585,33 @@ public class StreamPlayerGUI extends JFrame {
 
                 pickPlaylist = new JMenuItem(playlistName);
                 addToPlaylist.add(pickPlaylist);
-                pickPlaylist.addActionListener(new ButtonListener());
+                playlistArray.add(pickPlaylist);
+                for (int i = 0; i < playlistArray.size(); i++)
+                {
+                    if (playlistArray.get(i).equals(pickPlaylist))
+                    {
+                        playlistArray.get(i).addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                for (int i = 0; i < playlistArray.size(); i++)
+                                {
+                                    if (e.getSource().equals(playlistArray.get(i)))
+                                    {
+                                        String node = playlistArray.get(i).getText();
+                                        System.out.println(node);
+                                        playlistId = i+1;
+                                        //System.out.println(tables.get(playlistId).toString());
+                                        Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
+                                                model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
+                                        DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
+                                        a.addRow(newRow);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+                //pickPlaylist.addActionListener(new ButtonListener());
 
                 TreePath tpath = new TreePath(p.getPath());
                 playTree.setSelectionPath(tpath);
@@ -599,23 +627,6 @@ public class StreamPlayerGUI extends JFrame {
                 tables.remove(index);
                 defaultTreeModel.reload();
                 addToPlaylist.remove(pickPlaylist);
-            }
-            else if (e.getSource().equals(pickPlaylist))
-            {
-                String node = pickPlaylist.getText();
-                for(int i = 0 ; i < playlist.getChildCount(); i++)
-                {
-                    if (node.equals(playlist.getChildAt(i).toString()));
-                    {
-                        System.out.println(i);
-                        playlistId = i+1;
-                    }
-                }
-                Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
-                        model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
-                DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
-                a.addRow(newRow);
-
             }
         }
     }
