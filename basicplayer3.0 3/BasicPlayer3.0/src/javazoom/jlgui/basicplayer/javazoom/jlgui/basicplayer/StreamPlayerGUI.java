@@ -173,6 +173,7 @@ public class StreamPlayerGUI extends JFrame {
         delete2.addActionListener(new ButtonListener());
         open2.addActionListener(new ButtonListener());
         exit2.addActionListener(new ButtonListener());
+	deletePlaylist.addActionListener(new ButtonListener());
         //addToPlaylist.addActionListener(new ButtonListener());
 
         //popupMenu.addMouseListener(new PopClickListener());
