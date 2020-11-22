@@ -86,7 +86,7 @@ public class StreamPlayerGUI extends JFrame {
     DefaultTableModel model;
     DefaultTableModel m;
     DefaultTreeModel defaultTreeModel;
-    TreeNode selectedNode;
+    DefaultMutableTreeNode selectedNode;
 
     ArrayList<JTable> tables;
     ArrayList<JMenuItem> playlistArray;
@@ -173,7 +173,8 @@ public class StreamPlayerGUI extends JFrame {
         delete2.addActionListener(new ButtonListener());
         open2.addActionListener(new ButtonListener());
         exit2.addActionListener(new ButtonListener());
-	deletePlaylist.addActionListener(new ButtonListener());
+        deletePlaylist.addActionListener(new ButtonListener());
+        newWindow.addActionListener(new ButtonListener());
         //addToPlaylist.addActionListener(new ButtonListener());
 
         //popupMenu.addMouseListener(new PopClickListener());
@@ -189,8 +190,7 @@ public class StreamPlayerGUI extends JFrame {
                 currentRow = Integer.parseInt((String) playlistT.getValueAt(playlistT.getSelectedRow(), 0));
                 System.out.println(playlistT.getValueAt(playlistT.getSelectedRow(), 0));
                 TreePath path = playTree.getPathForLocation(e.getX(), e.getY());
-                DefaultMutableTreeNode selN = (DefaultMutableTreeNode) ((DefaultMutableTreeNode) path.getLastPathComponent());
-                selectedNode = (TreeNode) selN.getUserObject();
+                selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
                 System.out.println(selectedNode.toString());
             }
         };
@@ -601,7 +601,7 @@ public class StreamPlayerGUI extends JFrame {
                                         String node = playlistArray.get(i).getText();
                                         System.out.println(node);
                                         playlistId = i+1;
-                                        //System.out.println(tables.get(playlistId).toString());
+
                                         Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
                                                 model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
                                         DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
@@ -612,7 +612,6 @@ public class StreamPlayerGUI extends JFrame {
                         });
                     }
                 }
-                //pickPlaylist.addActionListener(new ButtonListener());
 
                 TreePath tpath = new TreePath(p.getPath());
                 playTree.setSelectionPath(tpath);
@@ -623,11 +622,22 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if (e.getSource().equals(deletePlaylist))
             {
-                int index = selectedNode.getIndex(selectedNode);
-                playTree.remove(index);
-                tables.remove(index);
-                defaultTreeModel.reload();
-                addToPlaylist.remove(pickPlaylist);
+                DefaultMutableTreeNode deleteNode = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                System.out.println(deleteNode.toString());
+                for(int i = 0; i < playlist.getChildCount(); i++)
+                {
+                    if (playlist.getChildAt(i).equals(deleteNode))
+                    {
+                        playlist.remove(deleteNode);
+                        tables.remove(i+1);
+                        defaultTreeModel.reload();
+                    }
+                    if (playlistArray.get(i).getText().equals(deleteNode.toString()))
+                    {
+                        addToPlaylist.remove(playlistArray.get(i));
+                        playlistArray.remove(i);
+                    }
+                }
             }
         }
     }
