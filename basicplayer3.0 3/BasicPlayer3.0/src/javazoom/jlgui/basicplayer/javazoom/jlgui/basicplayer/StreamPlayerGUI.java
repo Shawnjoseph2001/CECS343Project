@@ -302,6 +302,11 @@ public class StreamPlayerGUI extends JFrame {
                 id = idt + 1;
             }
         }
+        j.setDragEnabled(true);
+        j.setDropMode(DropMode.USE_SELECTION);
+        //j.setTransferHandler(new TransferHelper());
+        j.setRowSelectionAllowed(true);
+        //j.setCellSelectionEnabled(false);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension d = new Dimension(600, 500);
@@ -597,6 +602,7 @@ public class StreamPlayerGUI extends JFrame {
                 m = new DefaultTableModel(0, 5);
                 m.setColumnIdentifiers(colID);
                 playlistT = new JTable(m);
+                playlistT.setDropMode(DropMode.USE_SELECTION);
                 tables.add(playlistT);
 
                 pickPlaylist = new JMenuItem(playlistName);
@@ -654,31 +660,35 @@ public class StreamPlayerGUI extends JFrame {
             {
                 System.out.println("new window");
                 scrollPane2 = new JScrollPane();
-                scrollPane2.setPreferredSize(new Dimension(600, 500));
                 scrollPane2.setVisible(true);
                 JFrame frame = new JFrame ("Playlist Window");
                 frame.setSize(500, 500);
                 frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-                frame.add(scrollPane2);
                 frame.pack();
                 frame.setVisible (true);
 
-                frame.add(scrollPane2);
-                frame.setJMenuBar(menuBar);
-                frame.add(skipBack);
-                frame.add(play);
-                frame.add(pause);
-                frame.add(stop);
-                frame.add(skipForward);
+                String[] colID = {"ID", "Title", "Genre", "Artist", "Year"};
+                m = new DefaultTableModel(0, 5);
+                m.setColumnIdentifiers(colID);
 
-                frame.add(popupMenu);
-
+                JTable newWin = new JTable(m);
                 DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
                 for(int i = 0; i < playlist.getChildCount(); i++) {
-                    if (playlist.getChildAt(i).equals(openPlaylist)) {
-                        scrollPane2.add(tables.get(i + 1));
+                    if (playlist.getChildAt(i).toString().equals(openPlaylist.toString())) {
+                        newWin = tables.get(i + 1);
                     }
                 }
+                scrollPane2.add(newWin);
+                scrollPane2.setPreferredSize(new Dimension(475, 100));
+                frame.add(scrollPane2);
+                //frame.setJMenuBar(menuBar);
+                //frame.add(skipBack);
+                //frame.add(play);
+                //frame.add(pause);
+                //frame.add(stop);
+                //frame.add(skipForward);
+
+                //frame.add(popupMenu);
 
             }
             else if (e.getSource().equals(deletePlaylist))
@@ -707,6 +717,8 @@ public class StreamPlayerGUI extends JFrame {
                     }
                 }
             }
+            TreePath libpath = new TreePath(library.getPath());
+            playTree.setSelectionPath(libpath);
         }
     }
     class MyDropTarget extends DropTarget {
