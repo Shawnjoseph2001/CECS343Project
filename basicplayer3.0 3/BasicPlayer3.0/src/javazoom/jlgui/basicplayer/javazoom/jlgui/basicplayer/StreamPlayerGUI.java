@@ -504,19 +504,48 @@ public class StreamPlayerGUI extends JFrame {
     }
 
     void deleteSelectedSong() {
-        int currentSelectedRow = j.getSelectedRow();
+        int currentSelectedRow = 0;
+        for (int i = 0; i < tables.size(); i++)
+        {
+            if (tables.get(i).isShowing())
+            {
+                currentSelectedRow = tables.get(i).getSelectedRow();
+            }
+        }
         try {
-            String deleteByID = (String) model.getValueAt(currentSelectedRow, 0);
-            String query = "DELETE FROM songs WHERE ID = ?";
-            PreparedStatement preparedStmt = connection.prepareStatement(query);
-            preparedStmt.setString(1, deleteByID);
-            preparedStmt.execute();
+            for (int i = 1; i < tables.size(); i++) {
+                if (tables.get(i).isShowing()) {
+                    String deleteByID = (String) tables.get(i).getValueAt(currentSelectedRow, 0);
+                    String query = "";
+                    if (j.isShowing())
+                    {
+                       query = "DELETE FROM songs WHERE ID = ?";
+                    }
+                    else
+                    {
+                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                        String delete = deleteSong.toString();
+                        query = "DELETE FROM " + delete + " WHERE ID = ?";
+                    }
+                    PreparedStatement preparedStmt = connection.prepareStatement(query);
+                    preparedStmt.setString(1, deleteByID);
+                    preparedStmt.execute();
+
+                }
+            }
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        model.removeRow(currentSelectedRow);
-        numRows--;
+        for (int i = 1; i < tables.size(); i++) {
+            if (tables.get(i).isShowing())
+            {
+                DefaultTableModel deleteSong = (DefaultTableModel) tables.get(i).getModel();
+                deleteSong.removeRow(currentSelectedRow);
+            }
+        }
+        //model.removeRow(currentSelectedRow);
+        //numRows--;
 
     }
     class ButtonListener implements ActionListener {
@@ -633,6 +662,13 @@ public class StreamPlayerGUI extends JFrame {
                     ResultSet r = getCount.executeQuery();
                     r.next();
                     tableExists = r.getBoolean("count");
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+try {
+                    Statement st = connection.createStatement();
+                    String q = "INSERT INTO playlists (Name) Values ('" + playlistName +"')";
+                    st.executeUpdate(q);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
