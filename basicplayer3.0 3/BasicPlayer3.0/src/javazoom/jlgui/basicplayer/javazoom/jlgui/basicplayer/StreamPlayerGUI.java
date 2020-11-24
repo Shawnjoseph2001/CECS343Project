@@ -833,6 +833,13 @@ public class StreamPlayerGUI extends JFrame {
                     } catch (SQLException throwables) {
                         throwables.printStackTrace();
                     }
+		try {
+                        Statement stat = connection.createStatement();
+                        String q = "DELETE FROM playlists WHERE Name= " + deleteNode.toString();
+                        stat.executeUpdate(q);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
 
                 }
             }
