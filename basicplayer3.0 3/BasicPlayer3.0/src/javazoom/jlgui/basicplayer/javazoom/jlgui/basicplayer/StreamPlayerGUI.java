@@ -318,8 +318,8 @@ public class StreamPlayerGUI extends JFrame {
             }
         }
         j.setDragEnabled(true);
-        j.setDropMode(DropMode.USE_SELECTION);
-        //j.setTransferHandler(new TransferHelper());
+        //j.setDropMode(DropMode.USE_SELECTION);
+        //j.setTransferHandler(new TransferHandler());
         j.setRowSelectionAllowed(true);
         //j.setCellSelectionEnabled(false);
 
@@ -671,10 +671,10 @@ public class StreamPlayerGUI extends JFrame {
 
                                         try {
                                             PreparedStatement create = connection.prepareStatement("CREATE TABLE " + node + " (\n" +
-                                                    "ID VARCHAR(100)\n"  +
-                                                    "Title VARCHAR(100)\n" +
-                                                    "Genre VARCHAR(100)\n" +
-                                                    "Artist VARCHAR(100)\n " +
+                                                    "ID VARCHAR(100), \n"  +
+                                                    "Title VARCHAR(100), \n" +
+                                                    "Genre VARCHAR(100), \n" +
+                                                    "Artist VARCHAR(100), \n " +
                                                     "Year VARCHAR(100)\n " +
                                                     ");");
                                             create.execute();
@@ -707,12 +707,11 @@ public class StreamPlayerGUI extends JFrame {
             {
                 System.out.println("new window");
                 scrollPane2 = new JScrollPane();
-                scrollPane2.setVisible(true);
                 JFrame frame = new JFrame ("Playlist Window");
                 frame.setSize(500, 500);
-                frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+                frame.setDefaultCloseOperation (JFrame.HIDE_ON_CLOSE);
                 frame.pack();
-                frame.setVisible (true);
+                frame.setDropTarget(new MyDropTarget());
 
                 String[] colID = {"ID", "Title", "Genre", "Artist", "Year"};
                 m = new DefaultTableModel(0, 5);
@@ -723,11 +722,16 @@ public class StreamPlayerGUI extends JFrame {
                 for(int i = 0; i < playlist.getChildCount(); i++) {
                     if (playlist.getChildAt(i).toString().equals(openPlaylist.toString())) {
                         newWin = tables.get(i + 1);
+                        frame.setTitle(openPlaylist.toString());
                     }
                 }
-                scrollPane2.add(newWin);
-                scrollPane2.setPreferredSize(new Dimension(475, 100));
+                newWin.setVisible(true);
+                //scrollPane2.add(newWin);
+                scrollPane2.setViewportView(newWin);
+                scrollPane2.setVisible(true);
+                scrollPane2.setSize(new Dimension(475, 100));
                 frame.add(scrollPane2);
+                frame.setVisible (true);
                 //frame.setJMenuBar(menuBar);
                 //frame.add(skipBack);
                 //frame.add(play);
