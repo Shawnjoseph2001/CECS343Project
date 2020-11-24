@@ -129,7 +129,9 @@ public class StreamPlayerGUI extends JFrame {
         deletePlaylist = new JMenuItem("Delete Playlist");
 
         addToPlaylist = new JMenu("Add to playlist");
-
+        addToPlaylist.add(new JMenuItem("Playlists: "));
+        menuBar.add(addToPlaylist);
+        addToPlaylist.setVisible(true);
         treePopUp = new JPopupMenu();
         treePopUp.add(newWindow);
         treePopUp.add(deletePlaylist);
@@ -211,9 +213,14 @@ public class StreamPlayerGUI extends JFrame {
             throwables.printStackTrace();
         }
         if(!tableExists) {
-            connection.prepareStatement("CREATE TABLE playlists (Name VARCHAR(100) null)");
+            PreparedStatement addTable = connection.prepareStatement("CREATE TABLE playlists (Name VARCHAR(100) null)");
+            addTable.execute();
         }
-
+            PreparedStatement readFromTable = connection.prepareStatement("SELECT Name from playlists");
+        ResultSet r = readFromTable.executeQuery();
+        while(r.next()) {
+            playlistArray.add(new JMenuItem(r.getString("Name")));
+        }
 
         j.addMouseListener(m);
         nowPlaying = new JLabel("Now playing: nothing");
