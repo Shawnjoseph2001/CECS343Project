@@ -335,8 +335,11 @@ public class StreamPlayerGUI extends JFrame {
 
         PreparedStatement readFromTable = connection.prepareStatement("SELECT Name from playlists");
         ResultSet r = readFromTable.executeQuery();
+        ArrayList<DefaultMutableTreeNode> dtn = new ArrayList<>();
         while(r.next()) {
-            playlist.add(new DefaultMutableTreeNode(r.getString("Name")));
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(r.getString("Name"));
+            playlist.add(node);
+            dtn.add(node);
             subPanel.add(playTree);
             defaultTreeModel.reload();
             String[] colID = {"ID", "Title", "Genre", "Artist", "Year"};
@@ -356,6 +359,13 @@ public class StreamPlayerGUI extends JFrame {
                     md.addRow(columnList);
             }
             tables.add(playlistT);
+        }
+        if(playlistName.length() > 0) {
+            for(DefaultMutableTreeNode dt:dtn) {
+                if(dt.toString().equals(playlistName)) {
+                    //set as selected node
+                }
+            }
         }
     }
 
