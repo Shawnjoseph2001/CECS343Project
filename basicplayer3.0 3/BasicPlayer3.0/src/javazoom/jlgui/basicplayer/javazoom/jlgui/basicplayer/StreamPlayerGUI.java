@@ -200,6 +200,21 @@ public class StreamPlayerGUI extends JFrame {
                 System.out.println(selectedNode.toString());
             }
         };
+        boolean tableExists = false;
+        try {
+            PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = 'playlists')");
+            ResultSet r = getCount.executeQuery();
+            r.next();
+            tableExists = r.getBoolean("count");
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        if(!tableExists) {
+            connection.prepareStatement("CREATE TABLE playlists (Name VARCHAR(100) null)");
+        }
+
+
         j.addMouseListener(m);
         nowPlaying = new JLabel("Now playing: nothing");
         scrollPane = new JScrollPane(j);
@@ -584,16 +599,26 @@ public class StreamPlayerGUI extends JFrame {
                 String playlistName = JOptionPane.showInputDialog("Enter a name for the playlist");
                 System.out.println(playlistName);
                 p = new DefaultMutableTreeNode(playlistName);
-
+                boolean tableExists = false;
                 try {
-                    Statement stmt = connection.createStatement();
-                    String query = "CREATE TABLE " + playlistName + " (ID VARCHAR(100), " + "Title VARCHAR(100), " +
-                            "Genre VARCHAR(100), " + "Artist VARCHAR(100), " + "Year VARCHAR(100))";
-                    stmt.executeUpdate(query);
+                    PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + playlistName  + "')");
+                    ResultSet r = getCount.executeQuery();
+                    r.next();
+                    tableExists = r.getBoolean("count");
+
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
-
+                if(!tableExists) {
+                    try {
+                        Statement stmt = connection.createStatement();
+                        String query = "CREATE TABLE " + playlistName + " (ID VARCHAR(100), " + "Title VARCHAR(100), " +
+                                "Genre VARCHAR(100), " + "Artist VARCHAR(100), " + "Year VARCHAR(100))";
+                        stmt.executeUpdate(query);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+                }
                 playlist.add(p);
                 subPanel.add(playTree);
                 defaultTreeModel.reload();
@@ -633,7 +658,29 @@ public class StreamPlayerGUI extends JFrame {
                                         genre = (model.getValueAt(currentRow-1, 2)).toString();
                                         artist = (model.getValueAt(currentRow-1, 3)).toString();
                                         year = (model.getValueAt(currentRow-1, 4)).toString();
+                                        boolean tableExists = false;
+                                        try {
+                                            PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
+                                            ResultSet r = getCount.executeQuery();
+                                            r.next();
+                                            tableExists = r.getBoolean("count");
 
+                                        } catch (SQLException throwables) {
+                                            throwables.printStackTrace();
+                                        }
+
+                                        try {
+                                            PreparedStatement create = connection.prepareStatement("CREATE TABLE " + node + " (\n" +
+                                                    "ID VARCHAR(100)\n"  +
+                                                    "Title VARCHAR(100)\n" +
+                                                    "Genre VARCHAR(100)\n" +
+                                                    "Artist VARCHAR(100)\n " +
+                                                    "Year VARCHAR(100)\n " +
+                                                    ");");
+                                            create.execute();
+                                        } catch (SQLException throwables) {
+                                            throwables.printStackTrace();
+                                        }
                                         try {
                                             String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
                                             PreparedStatement preparedStatement = connection.prepareStatement(query2);
