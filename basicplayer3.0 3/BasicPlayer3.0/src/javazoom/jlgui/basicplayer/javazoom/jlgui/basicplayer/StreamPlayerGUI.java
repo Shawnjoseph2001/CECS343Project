@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.InvalidDataException;
@@ -186,12 +187,10 @@ public class StreamPlayerGUI extends JFrame {
 
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                for (int i = 0; i  < tables.size(); i++)
-                {
-                    if (tables.get(i).isShowing())
-                    {
-                        currentRow = Integer.parseInt((String) tables.get(i).getValueAt(tables.get(i).getSelectedRow(), 0));
-                        System.out.println(tables.get(i).getValueAt(tables.get(i).getSelectedRow(), 0));
+                for (JTable table : tables) {
+                    if (table.isShowing()) {
+                        currentRow = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(), 0));
+                        System.out.println(table.getValueAt(table.getSelectedRow(), 0));
                     }
                 }
             }
@@ -200,7 +199,7 @@ public class StreamPlayerGUI extends JFrame {
             public void mousePressed(MouseEvent e) {
                 currentRow = Integer.parseInt((String) playlistT.getValueAt(playlistT.getSelectedRow(), 0));
                 System.out.println(playlistT.getValueAt(playlistT.getSelectedRow(), 0));
-                selectedNode = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                selectedNode = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
                 System.out.println(selectedNode.toString());
             }
         };
@@ -235,42 +234,21 @@ public class StreamPlayerGUI extends JFrame {
         playTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         libTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        playTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e)
+        playTree.addTreeSelectionListener(e -> {
+            libTree.removeSelectionPath(libTree.getSelectionPath());
+            System.out.println(tables.size());
+            //String node = e.getNewLeadSelectionPath().getLastPathComponent().toString();
+            int n = playTree.getMinSelectionRow();
+            if (n > 0)
             {
-                libTree.removeSelectionPath(libTree.getSelectionPath());
-                System.out.println(tables.size());
-                //String node = e.getNewLeadSelectionPath().getLastPathComponent().toString();
-                int n = playTree.getMinSelectionRow();
-                if (n > 0)
-                {
-                    JTable tab;
-                    tab = tables.get(n);
-                    playlistScrollp = new JScrollPane(tab);
-                    playlistScrollp.setPreferredSize(new Dimension(475, 100));
-                    playlistScrollp.addMouseListener(new PopClickListener());
-                    tab.addMouseListener(tableListener);
-                    main.removeAll();
-                    main.add(playlistScrollp);
-                    main.add(skipBack);
-                    main.add(play);
-                    main.add(pause);
-                    main.add(stop);
-                    main.add(skipForward);
-                    main.revalidate();
-                    main.repaint();
-                }
-            }
-        });
-
-        libTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e)
-            {
-                playTree.removeSelectionPath(playTree.getSelectionPath());
+                JTable tab;
+                tab = tables.get(n);
+                playlistScrollp = new JScrollPane(tab);
+                playlistScrollp.setPreferredSize(new Dimension(475, 100));
+                playlistScrollp.addMouseListener(new PopClickListener());
+                tab.addMouseListener(tableListener);
                 main.removeAll();
-                main.add(scrollPane);
+                main.add(playlistScrollp);
                 main.add(skipBack);
                 main.add(play);
                 main.add(pause);
@@ -278,8 +256,21 @@ public class StreamPlayerGUI extends JFrame {
                 main.add(skipForward);
                 main.revalidate();
                 main.repaint();
-
             }
+        });
+
+        libTree.addTreeSelectionListener(e -> {
+            playTree.removeSelectionPath(playTree.getSelectionPath());
+            main.removeAll();
+            main.add(scrollPane);
+            main.add(skipBack);
+            main.add(play);
+            main.add(pause);
+            main.add(stop);
+            main.add(skipForward);
+            main.revalidate();
+            main.repaint();
+
         });
 
         //this.add(main);
@@ -294,9 +285,9 @@ public class StreamPlayerGUI extends JFrame {
 
         main.add(popupMenu);
 
-        tables = new ArrayList<JTable>();
+        tables = new ArrayList<>();
         tables.add(j);
-        playlistArray = new ArrayList<JMenuItem>();
+        playlistArray = new ArrayList<>();
         defaultTreeModel = new DefaultTreeModel(playlist);
         playTree.setModel(defaultTreeModel);
         j.addMouseListener(new PopClickListener());
@@ -462,7 +453,7 @@ public class StreamPlayerGUI extends JFrame {
             preparedStatement.setString(5, year);
             preparedStatement.setString(6, path);
 
-            if (alreadyInLib == false)
+            if (!alreadyInLib)
             {
                 preparedStatement.executeUpdate();
             }
@@ -474,12 +465,12 @@ public class StreamPlayerGUI extends JFrame {
             throwables.printStackTrace();
         }
         numRows++;
-        if (alreadyInLib == false && j.isShowing())
+        if (!alreadyInLib && j.isShowing())
         {
             Object[] newSong = {idString, title, genre, artist, year};
             model.addRow(newSong);
         }
-        else if (alreadyInLib == false)
+        else if (!alreadyInLib)
         {
             Object[] newSong = {idString, title, genre, artist, year};
             model.addRow(newSong);
@@ -508,11 +499,9 @@ public class StreamPlayerGUI extends JFrame {
 
     void deleteSelectedSong() {
         int currentSelectedRow = 0;
-        for (int i = 0; i < tables.size(); i++)
-        {
-            if (tables.get(i).isShowing())
-            {
-                currentSelectedRow = tables.get(i).getSelectedRow();
+        for (JTable table : tables) {
+            if (table.isShowing()) {
+                currentSelectedRow = table.getSelectedRow();
             }
         }
         try {
@@ -526,7 +515,7 @@ public class StreamPlayerGUI extends JFrame {
                     }
                     else
                     {
-                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
                         String delete = deleteSong.toString();
                         query = "DELETE FROM " + delete + " WHERE ID = ?";
                     }
@@ -540,10 +529,9 @@ public class StreamPlayerGUI extends JFrame {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        for (int i = 0; i < tables.size(); i++) {
-            if (tables.get(i).isShowing())
-            {
-                DefaultTableModel deleteSong = (DefaultTableModel) tables.get(i).getModel();
+        for (JTable table : tables) {
+            if (table.isShowing()) {
+                DefaultTableModel deleteSong = (DefaultTableModel) table.getModel();
                 deleteSong.removeRow(currentSelectedRow);
             }
         }
@@ -611,19 +599,7 @@ public class StreamPlayerGUI extends JFrame {
                     ResultSet r = p.executeQuery();
                     if (r.next()) {
                         currentSongID = r.getInt("ID");
-                        String fp = r.getString("Filepath");
-                        player.open(new File(fp));
-                        player.play();
-                        s.setTitle(r.getString("Title"));
-                        int nextIndex = -1;
-                        for(int i = 0; i < j.getRowCount(); i++) {
-                            if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
-                                nextIndex = i;
-                            }
-                        }
-                        if(nextIndex > -1) {
-                            j.setRowSelectionInterval(nextIndex, nextIndex);
-                        }
+                        genSet(r);
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -636,19 +612,7 @@ public class StreamPlayerGUI extends JFrame {
                     if (r.next()) {
                         String currentSongtemp = r.getString("ID");
                         currentSongID = Integer.parseInt(currentSongtemp);
-                        String fp = r.getString("Filepath");
-                        player.open(new File(fp));
-                        player.play();
-                        s.setTitle(r.getString("Title"));
-                        int nextIndex = -1;
-                        for(int i = 0; i < j.getRowCount(); i++) {
-                            if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
-                                nextIndex = i;
-                            }
-                        }
-                        if(nextIndex > -1) {
-                            j.setRowSelectionInterval(nextIndex, nextIndex);
-                        }
+                        genSet(r);
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -709,50 +673,47 @@ public class StreamPlayerGUI extends JFrame {
                 {
                     if (playlistArray.get(i).equals(pickPlaylist))
                     {
-                        playlistArray.get(i).addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                for (int i = 0; i < playlistArray.size(); i++)
+                        playlistArray.get(i).addActionListener(e1 -> {
+                            for (int i1 = 0; i1 < playlistArray.size(); i1++)
+                            {
+                                if (e1.getSource().equals(playlistArray.get(i1)))
                                 {
-                                    if (e.getSource().equals(playlistArray.get(i)))
-                                    {
-                                        String node = playlistArray.get(i).getText();
-                                        System.out.println(node);
-                                        playlistId = i+1;
+                                    String node = playlistArray.get(i1).getText();
+                                    System.out.println(node);
+                                    playlistId = i1 +1;
 
-                                        Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
-                                                model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
-                                        DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
-                                        a.addRow(newRow);
+                                    Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
+                                            model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
+                                    DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
+                                    a.addRow(newRow);
 
-                                        idString = (model.getValueAt(currentRow-1, 0)).toString();
-                                        title = (model.getValueAt(currentRow-1, 1)).toString();
-                                        genre = (model.getValueAt(currentRow-1, 2)).toString();
-                                        artist = (model.getValueAt(currentRow-1, 3)).toString();
-                                        year = (model.getValueAt(currentRow-1, 4)).toString();
-                                        boolean tableExists = false;
-                                        try {
-                                            PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
-                                            ResultSet r = getCount.executeQuery();
-                                            r.next();
-                                            tableExists = r.getBoolean("count");
+                                    idString = (model.getValueAt(currentRow-1, 0)).toString();
+                                    title = (model.getValueAt(currentRow-1, 1)).toString();
+                                    genre = (model.getValueAt(currentRow-1, 2)).toString();
+                                    artist = (model.getValueAt(currentRow-1, 3)).toString();
+                                    year = (model.getValueAt(currentRow-1, 4)).toString();
+                                    boolean tableExists1 = false;
+                                    try {
+                                        PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
+                                        ResultSet r = getCount.executeQuery();
+                                        r.next();
+                                        tableExists1 = r.getBoolean("count");
 
-                                        } catch (SQLException throwables) {
-                                            throwables.printStackTrace();
-                                        }
+                                    } catch (SQLException throwables) {
+                                        throwables.printStackTrace();
+                                    }
 
-                                        try {
-                                            String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
-                                            PreparedStatement preparedStatement = connection.prepareStatement(query2);
-                                            preparedStatement.setString(1, idString);
-                                            preparedStatement.setString(2, title);
-                                            preparedStatement.setString(3, genre);
-                                            preparedStatement.setString(4, artist);
-                                            preparedStatement.setString(5, year);
-                                            preparedStatement.executeUpdate();
-                                        } catch (SQLException throwables) {
-                                            throwables.printStackTrace();
-                                        }
+                                    try {
+                                        String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
+                                        PreparedStatement preparedStatement = connection.prepareStatement(query2);
+                                        preparedStatement.setString(1, idString);
+                                        preparedStatement.setString(2, title);
+                                        preparedStatement.setString(3, genre);
+                                        preparedStatement.setString(4, artist);
+                                        preparedStatement.setString(5, year);
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException throwables) {
+                                        throwables.printStackTrace();
                                     }
                                 }
                             }
@@ -768,7 +729,7 @@ public class StreamPlayerGUI extends JFrame {
                 System.out.println("new window");
                 scrollPane2 = new JScrollPane();
                 JFrame frame = new JFrame ("Playlist Window");
-                frame.setSize(500, 500);
+                frame.setPreferredSize(new Dimension(500, 500));
                 frame.setDefaultCloseOperation (JFrame.HIDE_ON_CLOSE);
                 frame.pack();
                 frame.setDropTarget(new MyDropTarget());
@@ -780,7 +741,7 @@ public class StreamPlayerGUI extends JFrame {
                 JTable newWin = new JTable(m);
 
 
-                DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
                 for(int i = 0; i < playlist.getChildCount(); i++) {
                     if (playlist.getChildAt(i).toString().equals(openPlaylist.toString())) {
 
@@ -834,7 +795,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             else if (e.getSource().equals(deletePlaylist))
             {
-                DefaultMutableTreeNode deleteNode = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
+                DefaultMutableTreeNode deleteNode = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
                 System.out.println(deleteNode.toString());
                 for(int i = 0; i < playlist.getChildCount(); i++)
                 {
@@ -874,6 +835,22 @@ public class StreamPlayerGUI extends JFrame {
                 playTree.setSelectionPath(libpath);
             }
         }
+
+        private void genSet(ResultSet r) throws SQLException, BasicPlayerException {
+            String fp = r.getString("Filepath");
+            player.open(new File(fp));
+            player.play();
+            s.setTitle(r.getString("Title"));
+            int nextIndex = -1;
+            for(int i = 0; i < j.getRowCount(); i++) {
+                if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
+                    nextIndex = i;
+                }
+            }
+            if(nextIndex > -1) {
+                j.setRowSelectionInterval(nextIndex, nextIndex);
+            }
+        }
     }
     class MyDropTarget extends DropTarget {
         public void drop(DropTargetDropEvent event) {
@@ -908,7 +885,6 @@ public class StreamPlayerGUI extends JFrame {
         threads = new ArrayList<>();
         players = new ArrayList<>();
         players.add(new StreamPlayerGUI(""));
-
     }
 
 }
