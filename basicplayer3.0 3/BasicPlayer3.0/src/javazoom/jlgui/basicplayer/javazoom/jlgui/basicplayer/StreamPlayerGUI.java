@@ -820,6 +820,9 @@ public class StreamPlayerGUI extends JFrame {
                 frame.add(pane);
                 scrollPane2.addMouseListener(new PopClickListener());
                 frame.setVisible (true);
+		playTree.removeSelectionPath(playTree.getSelectionPath());
+                TreePath libpath = new TreePath(library.getPath());
+                libTree.setSelectionPath(libpath);
             }
             else if (e.getSource().equals(deletePlaylist))
             {
@@ -859,8 +862,9 @@ public class StreamPlayerGUI extends JFrame {
                     }
 
                 }
+                playTree.removeSelectionPath(playTree.getSelectionPath());
                 TreePath libpath = new TreePath(library.getPath());
-                playTree.setSelectionPath(libpath);
+                libTree.setSelectionPath(libpath);
             }
         }
         private void genSet(ResultSet r) throws SQLException, BasicPlayerException {
