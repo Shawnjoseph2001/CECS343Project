@@ -127,16 +127,16 @@ public class StreamPlayerGUI extends JFrame {
         exit2 = new JMenuItem("Exit Program");
 
         newWindow = new JMenuItem("Open in new window");
-        file.add(newWindow);
+        //file.add(newWindow);
         deletePlaylist = new JMenuItem("Delete Playlist");
 
         addToPlaylist = new JMenu("Add to playlist");
-        addToPlaylist.add(new JMenuItem("Playlists: "));
+        //addToPlaylist.add(new JMenuItem("Playlists: "));
         treePopUp = new JPopupMenu();
         treePopUp.add(newWindow);
         treePopUp.add(deletePlaylist);
 
-        file.add(newWindow);
+        //file.add(newWindow);
         file.add(addToPlaylist);
         file.add(addSong);
         file.add(delete);
@@ -337,10 +337,10 @@ public class StreamPlayerGUI extends JFrame {
         ResultSet r = readFromTable.executeQuery();
         while(r.next()) {
             playlist.add(new DefaultMutableTreeNode(r.getString("Name")));
-	    JMenuItem playlist = new JMenuItem(r.getString("Name"));
+            JMenuItem playlist = new JMenuItem(r.getString("Name"));
             playlistArray.add(playlist);
             addToPlaylist.add(playlist);
-            subPanel.add(playTree);
+            //subPanel.add(playTree);
             defaultTreeModel.reload();
             String[] colID = {"ID", "Title", "Genre", "Artist", "Year"};
             DefaultTableModel md = new DefaultTableModel(0, 5);
@@ -350,13 +350,13 @@ public class StreamPlayerGUI extends JFrame {
             PreparedStatement addToPlaylist = connection.prepareStatement("SELECT * FROM " + r.getString("Name"));
             ResultSet pl = addToPlaylist.executeQuery();
             while(pl.next()) {
-                    String[] columnList = new String[5];
-                    columnList[0] = pl.getString("ID");
-                    columnList[1] = pl.getString("Title");
-                    columnList[2] = pl.getString("Genre");
-                    columnList[3] = pl.getString("Artist");
-                    columnList[4] = pl.getString("Year");
-                    md.addRow(columnList);
+                String[] columnList = new String[5];
+                columnList[0] = pl.getString("ID");
+                columnList[1] = pl.getString("Title");
+                columnList[2] = pl.getString("Genre");
+                columnList[3] = pl.getString("Artist");
+                columnList[4] = pl.getString("Year");
+                md.addRow(columnList);
             }
             tables.add(playlistT);
         }
@@ -398,7 +398,7 @@ public class StreamPlayerGUI extends JFrame {
                     currentSongID = r.getInt("ID");
                     player.open(new File(st));
                     player.play();
-                    s.setTitle(r.getString("Title"));
+                    //s.setTitle(r.getString("Title"));
 
                 }
             } catch (SQLException | BasicPlayerException throwables) {
@@ -522,7 +522,7 @@ public class StreamPlayerGUI extends JFrame {
                     String query = "";
                     if (j.isShowing())
                     {
-                       query = "DELETE FROM songs WHERE ID = ?";
+                        query = "DELETE FROM songs WHERE ID = ?";
                     }
                     else
                     {
@@ -540,7 +540,7 @@ public class StreamPlayerGUI extends JFrame {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        for (int i = 1; i < tables.size(); i++) {
+        for (int i = 0; i < tables.size(); i++) {
             if (tables.get(i).isShowing())
             {
                 DefaultTableModel deleteSong = (DefaultTableModel) tables.get(i).getModel();
@@ -559,7 +559,7 @@ public class StreamPlayerGUI extends JFrame {
             if (e.getSource().equals(stop)) {
                 try {
                     player.stop();
-                    s.setTitle("Not Playing");
+                    //s.setTitle("Not Playing");
                 } catch (BasicPlayerException basicPlayerException) {
                     basicPlayerException.printStackTrace();
                 }
@@ -668,7 +668,7 @@ public class StreamPlayerGUI extends JFrame {
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
-try {
+                try {
                     Statement st = connection.createStatement();
                     String q = "INSERT INTO playlists (Name) Values ('" + playlistName +"')";
                     st.executeUpdate(q);
@@ -765,7 +765,6 @@ try {
             }
             else if (e.getSource().equals(newWindow))
             {
-                /*
                 System.out.println("new window");
                 scrollPane2 = new JScrollPane();
                 JFrame frame = new JFrame ("Playlist Window");
@@ -778,17 +777,17 @@ try {
                 m = new DefaultTableModel(0, 5);
                 m.setColumnIdentifiers(colID);
 
-                //JTable newWin = new JTable(m);
+                JTable newWin = new JTable(m);
 
-                 */
+
                 DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) playTree.getSelectionPath().getLastPathComponent();
                 for(int i = 0; i < playlist.getChildCount(); i++) {
                     if (playlist.getChildAt(i).toString().equals(openPlaylist.toString())) {
-                        /*
+
                         newWin = tables.get(i + 1);
                         frame.setTitle(openPlaylist.toString());
-                         */
-                        Runnable task = () -> {
+
+                        /*Runnable task = () -> {
                             try {
                                 players.add(new StreamPlayerGUI(openPlaylist.toString()));
                             } catch (SQLException throwables) {
@@ -797,10 +796,10 @@ try {
                         };
                         Thread t = new Thread(task);
                         threads.add(t);
-                        t.start();
+                        t.start();*/
                     }
                 }
-                /*newWin.setVisible(true);
+                newWin.setVisible(true);
                 scrollPane2.add(newWin);
                 scrollPane2.setViewportView(newWin);
                 scrollPane2.setVisible(true);
@@ -831,7 +830,7 @@ try {
 
                 //frame.add(popupMenu);
 
-                 */
+
             }
             else if (e.getSource().equals(deletePlaylist))
             {
@@ -862,18 +861,18 @@ try {
                     } catch (SQLException throwables) {
                         throwables.printStackTrace();
                     }
-		try {
+                    try {
                         Statement stat = connection.createStatement();
-                        String q = "DELETE FROM playlists WHERE Name= " + deleteNode.toString();
+                        String q = "DELETE FROM playlists WHERE Name= '" + deleteNode.toString() +"'";
                         stat.executeUpdate(q);
                     } catch (SQLException throwables) {
                         throwables.printStackTrace();
                     }
 
                 }
+                TreePath libpath = new TreePath(library.getPath());
+                playTree.setSelectionPath(libpath);
             }
-            TreePath libpath = new TreePath(library.getPath());
-            playTree.setSelectionPath(libpath);
         }
     }
     class MyDropTarget extends DropTarget {
