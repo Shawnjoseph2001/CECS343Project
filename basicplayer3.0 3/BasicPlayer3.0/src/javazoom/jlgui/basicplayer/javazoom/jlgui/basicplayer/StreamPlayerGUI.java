@@ -1,8 +1,8 @@
 package javazoom.jlgui.basicplayer;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.*;
 import java.awt.*;
@@ -94,6 +94,8 @@ public class StreamPlayerGUI extends JFrame {
     ArrayList<JMenuItem> playlistArray;
 
     JScrollPane scrollPane2;
+    JSlider slider;
+    JLabel statusLabel;
 
     public StreamPlayerGUI(String playlistName) throws SQLException {
         String url = "jdbc:mysql://localhost:3306/mp3player";
@@ -160,9 +162,7 @@ public class StreamPlayerGUI extends JFrame {
         model.setColumnIdentifiers(columns);
         j = new JTable(model);
 
-        //j.setDropTarget(new MyDropTarget());
         this.setDropTarget(new MyDropTarget());
-        //scrollPane.setDropTarget(new MyDropTarget());
 
         stringSelected = new JFormattedTextField("No string assigned");
         play.addActionListener(new ButtonListener());
@@ -181,9 +181,6 @@ public class StreamPlayerGUI extends JFrame {
         exit2.addActionListener(new ButtonListener());
         deletePlaylist.addActionListener(new ButtonListener());
         newWindow.addActionListener(new ButtonListener());
-        //addToPlaylist.addActionListener(new ButtonListener());
-
-        //popupMenu.addMouseListener(new PopClickListener());
 
         MouseListener m = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -254,6 +251,8 @@ public class StreamPlayerGUI extends JFrame {
                 main.add(pause);
                 main.add(stop);
                 main.add(skipForward);
+                main.add(slider);
+                main.add(statusLabel);
                 main.revalidate();
                 main.repaint();
             }
@@ -268,9 +267,20 @@ public class StreamPlayerGUI extends JFrame {
             main.add(pause);
             main.add(stop);
             main.add(skipForward);
+            main.add(slider);
+            main.add(statusLabel);
             main.revalidate();
             main.repaint();
 
+        });
+
+        statusLabel = new JLabel("");
+        slider = new JSlider(JSlider.HORIZONTAL,0,100,10);
+
+        slider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                statusLabel.setText("Value : " + ((JSlider)e.getSource()).getValue());
+            }
         });
 
         //this.add(main);
@@ -282,7 +292,8 @@ public class StreamPlayerGUI extends JFrame {
         main.add(pause);
         main.add(stop);
         main.add(skipForward);
-
+        main.add(slider);
+        main.add(statusLabel);
         main.add(popupMenu);
 
         tables = new ArrayList<>();
@@ -319,8 +330,6 @@ public class StreamPlayerGUI extends JFrame {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension d = new Dimension(600, 500);
-        //j.add(jb);
-        //j.setSize(d);
         this.setSize(d);
         this.setVisible(true);
 
@@ -389,6 +398,7 @@ public class StreamPlayerGUI extends JFrame {
                     currentSongID = r.getInt("ID");
                     player.open(new File(st));
                     player.play();
+                    //System.out.println(st);
                     //s.setTitle(r.getString("Title"));
 
                 }
@@ -440,7 +450,6 @@ public class StreamPlayerGUI extends JFrame {
 
         id++;
         try {
-            //stmt = (Statement) BasicPlayerTest.connection.createStatement();
             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             PreparedStatement preparedStatement = connection.prepareStatement(query1);
 
@@ -515,8 +524,7 @@ public class StreamPlayerGUI extends JFrame {
                     }
                     else
                     {
-                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
-                        String delete = deleteSong.toString();
+                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();                        String delete = deleteSong.toString();
                         query = "DELETE FROM " + delete + " WHERE ID = ?";
                     }
                     PreparedStatement preparedStmt = connection.prepareStatement(query);
@@ -600,6 +608,19 @@ public class StreamPlayerGUI extends JFrame {
                     if (r.next()) {
                         currentSongID = r.getInt("ID");
                         genSet(r);
+                        String fp = r.getString("Filepath");
+                        player.open(new File(fp));
+                        player.play();
+                        s.setTitle(r.getString("Title"));
+                        int nextIndex = -1;
+                        for(int i = 0; i < j.getRowCount(); i++) {
+                            if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
+                                nextIndex = i;
+                            }
+                        }
+                        if(nextIndex > -1) {
+                            j.setRowSelectionInterval(nextIndex, nextIndex);
+                        }
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -613,6 +634,19 @@ public class StreamPlayerGUI extends JFrame {
                         String currentSongtemp = r.getString("ID");
                         currentSongID = Integer.parseInt(currentSongtemp);
                         genSet(r);
+                        String fp = r.getString("Filepath");
+                        player.open(new File(fp));
+                        player.play();
+                        s.setTitle(r.getString("Title"));
+                        int nextIndex = -1;
+                        for(int i = 0; i < j.getRowCount(); i++) {
+                            if (Integer.parseInt((String) j.getValueAt(i, 0)) == currentSongID) {
+                                nextIndex = i;
+                            }
+                        }
+                        if(nextIndex > -1) {
+                            j.setRowSelectionInterval(nextIndex, nextIndex);
+                        }
                     }
                 } catch (SQLException | BasicPlayerException throwables) {
                     throwables.printStackTrace();
@@ -673,50 +707,50 @@ public class StreamPlayerGUI extends JFrame {
                 {
                     if (playlistArray.get(i).equals(pickPlaylist))
                     {
-                        playlistArray.get(i).addActionListener(e1 -> {
-                            for (int i1 = 0; i1 < playlistArray.size(); i1++)
-                            {
-                                if (e1.getSource().equals(playlistArray.get(i1)))
+                        playlistArray.get(i).addActionListener(e1 ->  {
+                                for (int i1 = 0; i1 < playlistArray.size(); i1++)
                                 {
-                                    String node = playlistArray.get(i1).getText();
-                                    System.out.println(node);
-                                    playlistId = i1 +1;
+                                    if (e1.getSource().equals(playlistArray.get(i1)))
+                                    {
+                                        String node = playlistArray.get(i1).getText();
+                                        System.out.println(node);
+                                        playlistId = i1+1;
 
-                                    Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
-                                            model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
-                                    DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
-                                    a.addRow(newRow);
+                                        Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
+                                                model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
+                                        DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
+                                        a.addRow(newRow);
 
-                                    idString = (model.getValueAt(currentRow-1, 0)).toString();
-                                    title = (model.getValueAt(currentRow-1, 1)).toString();
-                                    genre = (model.getValueAt(currentRow-1, 2)).toString();
-                                    artist = (model.getValueAt(currentRow-1, 3)).toString();
-                                    year = (model.getValueAt(currentRow-1, 4)).toString();
-                                    boolean tableExists1 = false;
-                                    try {
-                                        PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
-                                        ResultSet r = getCount.executeQuery();
-                                        r.next();
-                                        tableExists1 = r.getBoolean("count");
+                                        idString = (model.getValueAt(currentRow-1, 0)).toString();
+                                        title = (model.getValueAt(currentRow-1, 1)).toString();
+                                        genre = (model.getValueAt(currentRow-1, 2)).toString();
+                                        artist = (model.getValueAt(currentRow-1, 3)).toString();
+                                        year = (model.getValueAt(currentRow-1, 4)).toString();
+                                        boolean tableExists1 = false;
+                                        try {
+                                            PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
+                                            ResultSet r = getCount.executeQuery();
+                                            r.next();
+                                            tableExists1 = r.getBoolean("count");
 
-                                    } catch (SQLException throwables) {
-                                        throwables.printStackTrace();
-                                    }
+                                        } catch (SQLException throwables) {
+                                            throwables.printStackTrace();
+                                        }
 
-                                    try {
-                                        String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
-                                        PreparedStatement preparedStatement = connection.prepareStatement(query2);
-                                        preparedStatement.setString(1, idString);
-                                        preparedStatement.setString(2, title);
-                                        preparedStatement.setString(3, genre);
-                                        preparedStatement.setString(4, artist);
-                                        preparedStatement.setString(5, year);
-                                        preparedStatement.executeUpdate();
-                                    } catch (SQLException throwables) {
-                                        throwables.printStackTrace();
+                                        try {
+                                            String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
+                                            PreparedStatement preparedStatement = connection.prepareStatement(query2);
+                                            preparedStatement.setString(1, idString);
+                                            preparedStatement.setString(2, title);
+                                            preparedStatement.setString(3, genre);
+                                            preparedStatement.setString(4, artist);
+                                            preparedStatement.setString(5, year);
+                                            preparedStatement.executeUpdate();
+                                        } catch (SQLException throwables) {
+                                            throwables.printStackTrace();
+                                        }
                                     }
                                 }
-                            }
                         });
                     }
                 }
@@ -741,8 +775,7 @@ public class StreamPlayerGUI extends JFrame {
                 JTable newWin = new JTable(m);
 
 
-                DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
-                for(int i = 0; i < playlist.getChildCount(); i++) {
+                DefaultMutableTreeNode openPlaylist = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();                for(int i = 0; i < playlist.getChildCount(); i++) {
                     if (playlist.getChildAt(i).toString().equals(openPlaylist.toString())) {
 
                         newWin = tables.get(i + 1);
@@ -771,27 +804,22 @@ public class StreamPlayerGUI extends JFrame {
                 frame.setJMenuBar(menuBar);
                 pane.add(skipBack);
                 pane.add(play);
+                pane.add(pause);
                 pane.add(stop);
                 pane.add(skipForward);
+                JLabel volume = new JLabel("");
+                JSlider slide = new JSlider(JSlider.HORIZONTAL,0,100,10);
+
+                slide.addChangeListener(new ChangeListener() {
+                    public void stateChanged(ChangeEvent e) {
+                        volume.setText("Value : " + ((JSlider)e.getSource()).getValue());
+                    }
+                });
+                pane.add(slide);
+                pane.add(volume);
                 frame.add(pane);
-                //skipBack.setBounds(170, 110, 89, 23);
-                //frame.getContentPane().add(skipBack);
-                //frame.getContentPane().add(play);
-                //frame.getContentPane().add(stop);
-                //frame.getContentPane().add(skipForward);
-                //newWin.addMouseListener(new PopClickListener());
                 scrollPane2.addMouseListener(new PopClickListener());
                 frame.setVisible (true);
-                //frame.setJMenuBar(menuBar);
-                //frame.add(skipBack);
-                //frame.add(play);
-                //frame.add(pause);
-                //frame.add(stop);
-                //frame.add(skipForward);
-
-                //frame.add(popupMenu);
-
-
             }
             else if (e.getSource().equals(deletePlaylist))
             {
@@ -835,7 +863,6 @@ public class StreamPlayerGUI extends JFrame {
                 playTree.setSelectionPath(libpath);
             }
         }
-
         private void genSet(ResultSet r) throws SQLException, BasicPlayerException {
             String fp = r.getString("Filepath");
             player.open(new File(fp));
@@ -885,6 +912,7 @@ public class StreamPlayerGUI extends JFrame {
         threads = new ArrayList<>();
         players = new ArrayList<>();
         players.add(new StreamPlayerGUI(""));
+
     }
 
 }
