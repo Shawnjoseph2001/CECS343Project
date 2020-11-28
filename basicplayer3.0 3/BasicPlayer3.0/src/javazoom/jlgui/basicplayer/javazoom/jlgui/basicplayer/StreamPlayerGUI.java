@@ -276,10 +276,15 @@ public class StreamPlayerGUI extends JFrame {
         statusLabel = new JLabel("");
         slider = new JSlider(JSlider.HORIZONTAL,0,100,10);
 
-        slider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                statusLabel.setText("Value : " + ((JSlider)e.getSource()).getValue());
+        slider.addChangeListener(e -> {
+
+            try {
+                player.setGain((((JSlider)e.getSource()).getValue()  / 100.0) * 1.4);
+                System.out.println((((JSlider)e.getSource()).getValue()  / 100.0) * 1.4);
+            } catch (BasicPlayerException basicPlayerException) {
+                basicPlayerException.printStackTrace();
             }
+            statusLabel.setText("Value : " + (((JSlider)e.getSource()).getValue()));
         });
 
         //this.add(main);
@@ -809,10 +814,15 @@ public class StreamPlayerGUI extends JFrame {
                 JLabel volume = new JLabel("");
                 JSlider slide = new JSlider(JSlider.HORIZONTAL,0,100,10);
 
-                slide.addChangeListener(new ChangeListener() {
-                    public void stateChanged(ChangeEvent e) {
-                        volume.setText("Value : " + ((JSlider)e.getSource()).getValue());
+                slide.addChangeListener(e12 -> {
+                    try {
+                        player.setGain(((JSlider) e12.getSource()).getValue());
+                        System.out.println("Changed gain to " + ((JSlider) e12.getSource()).getValue());
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
                     }
+                    volume.setText("Value : " + ((JSlider) e12.getSource()).getValue());
+
                 });
                 pane.add(slide);
                 pane.add(volume);
