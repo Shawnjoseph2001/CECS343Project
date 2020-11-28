@@ -140,8 +140,7 @@ public class StreamPlayerGUI extends JFrame {
         treePopUp.add(deletePlaylist);
 
         //file.add(newWindow);
-        file.add(addToPlaylist);
-        file.add(addSong);
+        // file.add(addSong);
         file.add(delete);
         file.add(open);
         file.add(createPlaylist);
