@@ -418,7 +418,9 @@ public class StreamPlayerGUI extends JFrame {
         path = file.getAbsolutePath();
         filename = file.getName();
         alreadyInLib = false;
-        String newid  =null;
+        twoWindows = false;
+        String playlist = null;
+        String newid = null;
         try {
             Mp3File song = new Mp3File(path);
             if (song.hasId3v2Tag()) {
@@ -439,10 +441,21 @@ public class StreamPlayerGUI extends JFrame {
                 if (song.getString("Title").equals(title))
                 {
                     alreadyInLib = true;
+                    System.out.println("Song is already in library");
                     newid = song.getString("ID");
-                    if (j.isShowing())
+                    for (int i = 1; i < tables.size(); i++)
                     {
-                        System.out.println("Song is already in library");
+                        if (tables.get(i).isShowing())
+                        {
+                            playlist =  Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent().toString();
+                        }
+                        if (j.isShowing() && tables.get(i).isShowing())
+                        {
+                            twoWindows = true;
+                        }
+                    }
+                    if (twoWindows == false && j.isShowing())
+                    {
                         return;
                     }
                 }
@@ -454,8 +467,10 @@ public class StreamPlayerGUI extends JFrame {
 
         id++;
         try {
+            String query2 = "INSERT INTO " + playlist + "(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             PreparedStatement preparedStatement = connection.prepareStatement(query1);
+            PreparedStatement prepareStat = connection.prepareStatement(query2);
 
             idString = Integer.toString(id);
 
@@ -466,14 +481,24 @@ public class StreamPlayerGUI extends JFrame {
             preparedStatement.setString(5, year);
             preparedStatement.setString(6, path);
 
+            prepareStat.setString(1, idString);
+            prepareStat.setString(2, title);
+            prepareStat.setString(3, genre);
+            prepareStat.setString(4, artist);
+            prepareStat.setString(5, year);
+            prepareStat.setString(6, path);
+
             if (!alreadyInLib)
             {
                 preparedStatement.executeUpdate();
             }
-            //stmt.executeUpdate(query1);
-            //query1 = "SELECT title FROM songs";
-            //ResultSet rs = stmt.executeQuery(query1);
-            //System.out.println(rs);
+            for (JTable table : tables) {
+                if (table.isShowing()) {
+                    prepareStat.executeUpdate();
+                }
+            }
+
+
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -518,7 +543,7 @@ public class StreamPlayerGUI extends JFrame {
             }
         }
         try {
-            for (int i = 1; i < tables.size(); i++) {
+            for (int i = 0; i < tables.size(); i++) {
                 if (tables.get(i).isShowing()) {
                     String deleteByID = (String) tables.get(i).getValueAt(currentSelectedRow, 0);
                     String query = "";
@@ -670,18 +695,18 @@ public class StreamPlayerGUI extends JFrame {
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
-                try {
+                /*try {
                     Statement st = connection.createStatement();
                     String q = "INSERT INTO playlists (Name) Values ('" + playlistName +"')";
                     st.executeUpdate(q);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
-                }
+                }*/
                 if(!tableExists) {
                     try {
                         Statement stmt = connection.createStatement();
                         String query = "CREATE TABLE " + playlistName + " (ID VARCHAR(100), " + "Title VARCHAR(100), " +
-                                "Genre VARCHAR(100), " + "Artist VARCHAR(100), " + "Year VARCHAR(100))";
+                                "Genre VARCHAR(100), " + "Artist VARCHAR(100), " + "Year VARCHAR(100), " + "Filepath VARCHAR(100))";
                         stmt.executeUpdate(query);
                     } catch (SQLException throwables) {
                         throwables.printStackTrace();
@@ -725,11 +750,27 @@ public class StreamPlayerGUI extends JFrame {
                                         DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
                                         a.addRow(newRow);
 
-                                        idString = (model.getValueAt(currentRow-1, 0)).toString();
+                                        String filep = null;
+                                        try {
+                                            PreparedStatement fill = connection.prepareStatement("SELECT * FROM songs");
+                                            ResultSet song = fill.executeQuery();
+                                            while (song.next()) {
+                                                idString = song.getString("ID");
+                                                title = song.getString("Title");
+                                                genre = song.getString("Genre");
+                                                artist = song.getString("Artist");
+                                                year = song.getString("Year");
+                                                filep = song.getString("Filepath");
+                                            }
+                                        } catch (SQLException throwables) {
+                                            throwables.printStackTrace();
+                                        }
+
+                                        /*idString = (model.getValueAt(currentRow-1, 0)).toString();
                                         title = (model.getValueAt(currentRow-1, 1)).toString();
                                         genre = (model.getValueAt(currentRow-1, 2)).toString();
                                         artist = (model.getValueAt(currentRow-1, 3)).toString();
-                                        year = (model.getValueAt(currentRow-1, 4)).toString();
+                                        year = (model.getValueAt(currentRow-1, 4)).toString();*/
                                         boolean tableExists1 = false;
                                         try {
                                             PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
@@ -742,13 +783,14 @@ public class StreamPlayerGUI extends JFrame {
                                         }
 
                                         try {
-                                            String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year) " + "VALUES (?, ?, ?, ?, ?);";
+                                            String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
                                             PreparedStatement preparedStatement = connection.prepareStatement(query2);
                                             preparedStatement.setString(1, idString);
                                             preparedStatement.setString(2, title);
                                             preparedStatement.setString(3, genre);
                                             preparedStatement.setString(4, artist);
                                             preparedStatement.setString(5, year);
+                                            preparedStatement.setString(6, filep);
                                             preparedStatement.executeUpdate();
                                         } catch (SQLException throwables) {
                                             throwables.printStackTrace();
