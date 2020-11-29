@@ -502,7 +502,7 @@ public class StreamPlayerGUI extends JFrame {
             {
                 preparedStatement.executeUpdate();
             }
-            for (int i = 0; i < tables.size(); i++) {
+            for (int i = 1; i < tables.size(); i++) {
                 if (tables.get(i).isShowing()) {
                     System.out.println(playlistString);
                     prepareStat.executeUpdate();
