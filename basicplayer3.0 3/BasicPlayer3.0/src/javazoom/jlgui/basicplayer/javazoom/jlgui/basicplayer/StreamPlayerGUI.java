@@ -502,8 +502,8 @@ public class StreamPlayerGUI extends JFrame {
             {
                 preparedStatement.executeUpdate();
             }
-            for (JTable table : tables) {
-                if (table.isShowing()) {
+            for (int i = 0; i < tables.size(); i++) {
+                if (tables.get(i).isShowing()) {
                     System.out.println(playlistString);
                     prepareStat.executeUpdate();
                 }
