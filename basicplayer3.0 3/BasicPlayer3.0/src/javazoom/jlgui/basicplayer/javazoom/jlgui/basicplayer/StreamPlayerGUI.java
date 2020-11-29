@@ -420,7 +420,7 @@ public class StreamPlayerGUI extends JFrame {
         filename = file.getName();
         alreadyInLib = false;
         twoWindows = false;
-        String playlist = null;
+        String playlistString = null;
         String newid = null;
         try {
             Mp3File song = new Mp3File(path);
@@ -448,14 +448,15 @@ public class StreamPlayerGUI extends JFrame {
                     {
                         if (tables.get(i).isShowing())
                         {
-                            playlist =  Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent().toString();
+                            DefaultMutableTreeNode playNode = (DefaultMutableTreeNode) playlist.getChildAt(i-1);
+                            playlistString = playNode.toString();
                         }
                         if (j.isShowing() && tables.get(i).isShowing())
                         {
                             twoWindows = true;
                         }
                     }
-                    if (!twoWindows && j.isShowing())
+                    if (twoWindows == false && j.isShowing())
                     {
                         return;
                     }
@@ -468,23 +469,10 @@ public class StreamPlayerGUI extends JFrame {
 
         id++;
         try {
-            if(playlist != null) {
-                String query2 = "INSERT INTO " + playlist + "(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
-                PreparedStatement prepareStat = connection.prepareStatement(query2);
-                prepareStat.setString(1, idString);
-                prepareStat.setString(2, title);
-                prepareStat.setString(3, genre);
-                prepareStat.setString(4, artist);
-                prepareStat.setString(5, year);
-                prepareStat.setString(6, path);
-                for (JTable table : tables) {
-                    if (table.isShowing()) {
-                        prepareStat.executeUpdate();
-                    }
-                }
-            }
+            String query2 = "INSERT INTO " + playlistString + "(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             PreparedStatement preparedStatement = connection.prepareStatement(query1);
+            PreparedStatement prepareStat = connection.prepareStatement(query2);
 
             idString = Integer.toString(id);
 
@@ -495,13 +483,23 @@ public class StreamPlayerGUI extends JFrame {
             preparedStatement.setString(5, year);
             preparedStatement.setString(6, path);
 
-
+            prepareStat.setString(1, idString);
+            prepareStat.setString(2, title);
+            prepareStat.setString(3, genre);
+            prepareStat.setString(4, artist);
+            prepareStat.setString(5, year);
+            prepareStat.setString(6, path);
 
             if (!alreadyInLib)
             {
                 preparedStatement.executeUpdate();
             }
-
+            for (JTable table : tables) {
+                if (table.isShowing()) {
+                    //System.out.println(prepareStat.executeUpdate());
+                    prepareStat.executeUpdate();
+                }
+            }
 
 
         } catch (SQLException throwables) {
