@@ -469,6 +469,14 @@ public class StreamPlayerGUI extends JFrame {
 
         id++;
         try {
+            for (int i =1; i < tables.size(); i++)
+            {
+                if (tables.get(i).isShowing())
+                {
+                    DefaultMutableTreeNode playNode = (DefaultMutableTreeNode) playlist.getChildAt(i-1);
+                    playlistString = playNode.toString();
+                }
+            }
             String query2 = "INSERT INTO " + playlistString + "(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             PreparedStatement preparedStatement = connection.prepareStatement(query1);
@@ -496,7 +504,7 @@ public class StreamPlayerGUI extends JFrame {
             }
             for (JTable table : tables) {
                 if (table.isShowing()) {
-                    //System.out.println(prepareStat.executeUpdate());
+                    System.out.println(playlistString);
                     prepareStat.executeUpdate();
                 }
             }
