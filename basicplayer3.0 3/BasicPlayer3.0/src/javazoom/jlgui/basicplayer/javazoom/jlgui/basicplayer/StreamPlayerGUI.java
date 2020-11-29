@@ -48,7 +48,7 @@ public class StreamPlayerGUI extends JFrame {
     JTextField stringSelected;
     JTable j;
     JTable playlistT;
-
+    boolean twoWindows;
     JLabel nowPlaying;
     int currentRow;
     String path = "";
@@ -98,6 +98,7 @@ public class StreamPlayerGUI extends JFrame {
     JLabel statusLabel;
 
     public StreamPlayerGUI(String playlistName) throws SQLException {
+        twoWindows = false;
         String url = "jdbc:mysql://localhost:3306/mp3player";
         String username = "root";
         String password = "musicplayer123";
@@ -454,7 +455,7 @@ public class StreamPlayerGUI extends JFrame {
                             twoWindows = true;
                         }
                     }
-                    if (twoWindows == false && j.isShowing())
+                    if (!twoWindows && j.isShowing())
                     {
                         return;
                     }
@@ -467,10 +468,23 @@ public class StreamPlayerGUI extends JFrame {
 
         id++;
         try {
-            String query2 = "INSERT INTO " + playlist + "(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
+            if(playlist != null) {
+                String query2 = "INSERT INTO " + playlist + "(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
+                PreparedStatement prepareStat = connection.prepareStatement(query2);
+                prepareStat.setString(1, idString);
+                prepareStat.setString(2, title);
+                prepareStat.setString(3, genre);
+                prepareStat.setString(4, artist);
+                prepareStat.setString(5, year);
+                prepareStat.setString(6, path);
+                for (JTable table : tables) {
+                    if (table.isShowing()) {
+                        prepareStat.executeUpdate();
+                    }
+                }
+            }
             String query1 = "INSERT INTO songs(ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
             PreparedStatement preparedStatement = connection.prepareStatement(query1);
-            PreparedStatement prepareStat = connection.prepareStatement(query2);
 
             idString = Integer.toString(id);
 
@@ -481,22 +495,13 @@ public class StreamPlayerGUI extends JFrame {
             preparedStatement.setString(5, year);
             preparedStatement.setString(6, path);
 
-            prepareStat.setString(1, idString);
-            prepareStat.setString(2, title);
-            prepareStat.setString(3, genre);
-            prepareStat.setString(4, artist);
-            prepareStat.setString(5, year);
-            prepareStat.setString(6, path);
+
 
             if (!alreadyInLib)
             {
                 preparedStatement.executeUpdate();
             }
-            for (JTable table : tables) {
-                if (table.isShowing()) {
-                    prepareStat.executeUpdate();
-                }
-            }
+
 
 
         } catch (SQLException throwables) {
