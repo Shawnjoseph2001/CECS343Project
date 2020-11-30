@@ -519,6 +519,14 @@ public class StreamPlayerGUI extends JFrame {
         {
             Object[] newSong = {idString, title, genre, artist, year};
             model.addRow(newSong);
+	    for (int i = 1; i < tables.size(); i++)
+                {
+                    if(tables.get(i).isShowing())
+                    {
+                        DefaultTableModel a = (DefaultTableModel) tables.get(i).getModel();
+                        a.addRow(newSong);
+                    }
+                }
         }
         else if (!alreadyInLib)
         {
