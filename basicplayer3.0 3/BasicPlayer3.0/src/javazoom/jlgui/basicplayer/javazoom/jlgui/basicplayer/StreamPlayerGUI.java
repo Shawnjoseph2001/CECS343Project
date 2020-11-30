@@ -48,7 +48,7 @@ public class StreamPlayerGUI extends JFrame {
     JTextField stringSelected;
     JTable j;
     JTable playlistT;
-    boolean twoWindows;
+
     JLabel nowPlaying;
     int currentRow;
     String path = "";
@@ -96,9 +96,9 @@ public class StreamPlayerGUI extends JFrame {
     JScrollPane scrollPane2;
     JSlider slider;
     JLabel statusLabel;
+    Boolean twoWindows;
 
     public StreamPlayerGUI(String playlistName) throws SQLException {
-        twoWindows = false;
         String url = "jdbc:mysql://localhost:3306/mp3player";
         String username = "root";
         String password = "musicplayer123";
@@ -141,7 +141,8 @@ public class StreamPlayerGUI extends JFrame {
         treePopUp.add(deletePlaylist);
 
         //file.add(newWindow);
-        // file.add(addSong);
+        file.add(addToPlaylist);
+        file.add(addSong);
         file.add(delete);
         file.add(open);
         file.add(createPlaylist);
@@ -850,6 +851,19 @@ public class StreamPlayerGUI extends JFrame {
                         t.start();*/
                     }
                 }
+                JLabel volume = new JLabel("");
+                JSlider slide = new JSlider(JSlider.HORIZONTAL,0,100,10);
+
+                slide.addChangeListener(e12 -> {
+                    try {
+                        player.setGain(((JSlider) e12.getSource()).getValue());
+                        System.out.println("Changed gain to " + ((JSlider) e12.getSource()).getValue());
+                    } catch (BasicPlayerException basicPlayerException) {
+                        basicPlayerException.printStackTrace();
+                    }
+                    volume.setText("Value : " + ((JSlider) e12.getSource()).getValue());
+
+                });
                 newWin.setVisible(true);
                 scrollPane2.add(newWin);
                 scrollPane2.setViewportView(newWin);
@@ -864,25 +878,12 @@ public class StreamPlayerGUI extends JFrame {
                 pane.add(pause);
                 pane.add(stop);
                 pane.add(skipForward);
-                JLabel volume = new JLabel("");
-                JSlider slide = new JSlider(JSlider.HORIZONTAL,0,100,10);
-
-                slide.addChangeListener(e12 -> {
-                    try {
-                        player.setGain(((JSlider) e12.getSource()).getValue());
-                        System.out.println("Changed gain to " + ((JSlider) e12.getSource()).getValue());
-                    } catch (BasicPlayerException basicPlayerException) {
-                        basicPlayerException.printStackTrace();
-                    }
-                    volume.setText("Value : " + ((JSlider) e12.getSource()).getValue());
-
-                });
                 pane.add(slide);
                 pane.add(volume);
                 frame.add(pane);
                 scrollPane2.addMouseListener(new PopClickListener());
                 frame.setVisible (true);
-		playTree.removeSelectionPath(playTree.getSelectionPath());
+                playTree.removeSelectionPath(playTree.getSelectionPath());
                 TreePath libpath = new TreePath(library.getPath());
                 libTree.setSelectionPath(libpath);
             }
