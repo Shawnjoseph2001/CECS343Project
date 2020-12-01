@@ -177,6 +177,11 @@ public class StreamPlayerGUI extends JFrame {
         skipForward.addActionListener(new ButtonListener());
         skipBack.addActionListener(new ButtonListener());
         stop.addActionListener(new ButtonListener());
+        play2.addActionListener(new ButtonListener());
+        pause2.addActionListener(new ButtonListener());
+        skipForward2.addActionListener(new ButtonListener());
+        skipBack2.addActionListener(new ButtonListener());
+        stop2.addActionListener(new ButtonListener());
         addSong.addActionListener(new ButtonListener());
         delete.addActionListener(new ButtonListener());
         open.addActionListener(new ButtonListener());
@@ -203,8 +208,11 @@ public class StreamPlayerGUI extends JFrame {
             public void mousePressed(MouseEvent e) {
                 currentRow = Integer.parseInt((String) playlistT.getValueAt(playlistT.getSelectedRow(), 0));
                 System.out.println(playlistT.getValueAt(playlistT.getSelectedRow(), 0));
-                selectedNode = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
-                System.out.println(selectedNode.toString());
+                if (playTree.getSelectionPath() != null)
+                {
+                    selectedNode = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
+                    System.out.println(selectedNode.toString());
+                }
             }
         };
         boolean tableExists = false;
