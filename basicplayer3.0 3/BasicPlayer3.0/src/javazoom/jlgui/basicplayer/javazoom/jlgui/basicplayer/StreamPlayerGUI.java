@@ -1,8 +1,6 @@
 package javazoom.jlgui.basicplayer;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.*;
 import java.awt.*;
@@ -73,7 +71,6 @@ public class StreamPlayerGUI extends JFrame {
     JMenuItem newWindow;
     JMenuItem deletePlaylist;
     JMenu addToPlaylist;
-    String[] columns;
     int currentSongID;
     JPopupMenu popupMenu;
     JPopupMenu treePopUp;
@@ -83,7 +80,6 @@ public class StreamPlayerGUI extends JFrame {
 
     public static Connection connection;
     public static ArrayList<Thread> threads;
-    Statement stmt = null;
     int numRows;
     DefaultTableModel model;
     DefaultTableModel m;
@@ -98,7 +94,7 @@ public class StreamPlayerGUI extends JFrame {
     JLabel statusLabel;
     Boolean twoWindows;
 
-    public StreamPlayerGUI(String playlistName) throws SQLException {
+    public StreamPlayerGUI() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/mp3player";
         String username = "root";
         String password = "musicplayer123";
@@ -346,6 +342,7 @@ public class StreamPlayerGUI extends JFrame {
             JMenuItem playlist = new JMenuItem(r.getString("Name"));
             playlistArray.add(playlist);
             addToPlaylist.add(playlist);
+            playlist.addActionListener(new ButtonListener());
             //subPanel.add(playTree);
             defaultTreeModel.reload();
             String[] colID = {"ID", "Title", "Genre", "Artist", "Year"};
@@ -457,7 +454,7 @@ public class StreamPlayerGUI extends JFrame {
                             twoWindows = true;
                         }
                     }
-                    if (twoWindows == false && j.isShowing())
+                    if (!twoWindows && j.isShowing())
                     {
                         return;
                     }
@@ -563,17 +560,15 @@ public class StreamPlayerGUI extends JFrame {
             }
         }
         try {
-            for (int i = 0; i < tables.size(); i++) {
-                if (tables.get(i).isShowing()) {
-                    String deleteByID = (String) tables.get(i).getValueAt(currentSelectedRow, 0);
-                    String query = "";
-                    if (j.isShowing())
-                    {
+            for (JTable table : tables) {
+                if (table.isShowing()) {
+                    String deleteByID = (String) table.getValueAt(currentSelectedRow, 0);
+                    String query;
+                    if (j.isShowing()) {
                         query = "DELETE FROM songs WHERE ID = ?";
-                    }
-                    else
-                    {
-                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();                        String delete = deleteSong.toString();
+                    } else {
+                        DefaultMutableTreeNode deleteSong = (DefaultMutableTreeNode) Objects.requireNonNull(playTree.getSelectionPath()).getLastPathComponent();
+                        String delete = deleteSong.toString();
                         query = "DELETE FROM " + delete + " WHERE ID = ?";
                     }
                     PreparedStatement preparedStmt = connection.prepareStatement(query);
@@ -610,7 +605,19 @@ public class StreamPlayerGUI extends JFrame {
                 }
             } else if (e.getSource().equals(play)) {
                 playButton();
-            } else if (e.getSource().equals(pause)) {
+            }
+
+            else if(addToPlaylist.isMenuComponent((Component) e.getSource())) {
+                try {
+                    PreparedStatement ps = connection.prepareStatement("INSERT INTO " + e.getActionCommand() + "  (ID, Title, Artist, Genre, Year, Filepath) SELECT ID, Title, Artist, Genre, Year, Filepath FROM songs WHERE ID='" + j.getValueAt(j.getSelectedRow(), 0) + "'");
+                    ps.execute();
+                    
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+
+            }
+                else if (e.getSource().equals(pause)) {
                 try {
                     player.pause();
                 } catch (BasicPlayerException basicPlayerException) {
@@ -751,6 +758,7 @@ public class StreamPlayerGUI extends JFrame {
 
                 pickPlaylist = new JMenuItem(playlistName);
                 addToPlaylist.add(pickPlaylist);
+                pickPlaylist.addActionListener(new ButtonListener());
                 playlistArray.add(pickPlaylist);
                 for (int i = 0; i < playlistArray.size(); i++)
                 {
@@ -986,7 +994,7 @@ public class StreamPlayerGUI extends JFrame {
     public static void main (String[]args) throws SQLException {
         threads = new ArrayList<>();
         players = new ArrayList<>();
-        players.add(new StreamPlayerGUI(""));
+        players.add(new StreamPlayerGUI());
 
     }
 
