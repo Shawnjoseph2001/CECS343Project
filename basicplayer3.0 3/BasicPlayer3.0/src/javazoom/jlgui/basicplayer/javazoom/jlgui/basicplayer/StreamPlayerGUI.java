@@ -1071,12 +1071,12 @@ public class StreamPlayerGUI extends JFrame {
             JTable target = (JTable) info.getComponent();
             DefaultTableModel model = (DefaultTableModel) target.getModel();
             // boolean insert = dl.isInsert();
-            int max = model.getRowCount();
+            /*int max = model.getRowCount();
             int index = dl.getRow();
             // index = index < 0 ? max : index; // If it is out of range, it is appended to the end
             // index = Math.min(index, max);
             index = index >= 0 && index < max ? index : max;
-            addIndex = index;
+            addIndex = index;*/
             // target.setCursor(Cursor.getDefaultCursor());
             try {
                 List<?> values = (List<?>) info.getTransferable().getTransferData(FLAVOR);
@@ -1085,10 +1085,10 @@ public class StreamPlayerGUI extends JFrame {
                 }
                 Object[] type = new Object[0];
                 for (Object o: values) {
-                    int row = index++;
+                    //int row = index++;
                     // model.insertRow(row, (Vector<?>) o);
-                    model.insertRow(row, ((List<?>) o).toArray(type));
-                    target.getSelectionModel().addSelectionInterval(row, row);
+                    model.addRow(((List<?>) o).toArray(type));
+                    //target.getSelectionModel().addSelectionInterval(row, row);
                 }
                 return true;
             } catch (UnsupportedFlavorException | IOException ex) {
