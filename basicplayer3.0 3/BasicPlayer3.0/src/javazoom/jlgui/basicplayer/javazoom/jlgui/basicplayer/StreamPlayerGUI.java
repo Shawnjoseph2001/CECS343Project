@@ -807,12 +807,15 @@ public class StreamPlayerGUI extends JFrame {
                                             PreparedStatement fill = connection.prepareStatement("SELECT * FROM songs");
                                             ResultSet song = fill.executeQuery();
                                             while (song.next()) {
-                                                idString = song.getString("ID");
-                                                title = song.getString("Title");
-                                                genre = song.getString("Genre");
-                                                artist = song.getString("Artist");
-                                                year = song.getString("Year");
-                                                filep = song.getString("Filepath");
+                                                if (model.getValueAt(currentRow-1, 0).equals(model.getValueAt(currentRow-1, 0)))
+                                                {
+                                                    idString = song.getString("ID");
+                                                    title = song.getString("Title");
+                                                    genre = song.getString("Genre");
+                                                    artist = song.getString("Artist");
+                                                    year = song.getString("Year");
+                                                    filep = song.getString("Filepath");
+                                                }
                                             }
                                         } catch (SQLException throwables) {
                                             throwables.printStackTrace();
