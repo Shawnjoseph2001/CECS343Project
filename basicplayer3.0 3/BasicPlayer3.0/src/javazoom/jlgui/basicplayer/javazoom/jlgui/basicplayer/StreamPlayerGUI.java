@@ -39,10 +39,15 @@ public class StreamPlayerGUI extends JFrame {
     JTree playTree;
     JScrollPane playlistScrollp;
     JButton play;
+    JButton play2;
     JButton stop;
+    JButton stop2;
     JButton pause;
+    JButton pause2;
     JButton skipForward;
+    JButton skipForward2;
     JButton skipBack;
+    JButton skipBack2;
     JTextField stringSelected;
     JTable j;
     JTable playlistT;
@@ -109,10 +114,15 @@ public class StreamPlayerGUI extends JFrame {
         splitPane.setDividerLocation(100);
 
         play = new JButton("Play");
+        play2 = new JButton("Play");
         pause = new JButton("Pause");
+        pause2 = new JButton("Pause");
         stop = new JButton("Stop");
+        stop2 = new JButton("Stop");
         skipForward = new JButton(" >> ");
+        skipForward2 = new JButton(" >> ");
         skipBack = new JButton(" << ");
+        skipBack2 = new JButton(" << ");
         menuBar = new JMenuBar();
         file = new JMenu("File");
         menuBar.add(file);
@@ -213,6 +223,7 @@ public class StreamPlayerGUI extends JFrame {
         }
 
         j.addMouseListener(m);
+        j.addMouseListener(new PopClickListener());
         nowPlaying = new JLabel("Now playing: nothing");
         scrollPane = new JScrollPane(j);
         scrollPane.setPreferredSize(new Dimension(475, 100));
@@ -241,6 +252,7 @@ public class StreamPlayerGUI extends JFrame {
                 playlistScrollp.setPreferredSize(new Dimension(475, 100));
                 playlistScrollp.addMouseListener(new PopClickListener());
                 tab.addMouseListener(tableListener);
+                tab.addMouseListener(new PopClickListener());
                 main.removeAll();
                 main.add(playlistScrollp);
                 main.add(skipBack);
@@ -611,7 +623,7 @@ public class StreamPlayerGUI extends JFrame {
                 try {
                     PreparedStatement ps = connection.prepareStatement("INSERT INTO " + e.getActionCommand() + "  (ID, Title, Artist, Genre, Year, Filepath) SELECT ID, Title, Artist, Genre, Year, Filepath FROM songs WHERE ID='" + j.getValueAt(j.getSelectedRow(), 0) + "'");
                     ps.execute();
-                    
+
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -889,11 +901,11 @@ public class StreamPlayerGUI extends JFrame {
                 pane.add(scrollPane2);
                 pane.add(popupMenu);
                 frame.setJMenuBar(menuBar);
-                pane.add(skipBack);
-                pane.add(play);
-                pane.add(pause);
-                pane.add(stop);
-                pane.add(skipForward);
+                pane.add(skipBack2);
+                pane.add(play2);
+                pane.add(pause2);
+                pane.add(stop2);
+                pane.add(skipForward2);
                 pane.add(slide);
                 pane.add(volume);
                 frame.add(pane);
