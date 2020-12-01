@@ -510,7 +510,10 @@ public class StreamPlayerGUI extends JFrame {
             preparedStatement.setString(5, year);
             preparedStatement.setString(6, path);
 
-            prepareStat.setString(1, idString);
+            if (alreadyInLib)
+                prepareStat.setString(1, newid);
+            else
+                prepareStat.setString(1, idString);
             prepareStat.setString(2, title);
             prepareStat.setString(3, genre);
             prepareStat.setString(4, artist);
@@ -1109,9 +1112,9 @@ public class StreamPlayerGUI extends JFrame {
                         }
                     }
                 }
-                for (int i = indices.length - 1; i >= 0; i--) {
+                /*for (int i = indices.length - 1; i >= 0; i--) {
                     model.removeRow(indices[i]);
-                }
+                }*/
             }
             indices = null;
             addCount = 0;
