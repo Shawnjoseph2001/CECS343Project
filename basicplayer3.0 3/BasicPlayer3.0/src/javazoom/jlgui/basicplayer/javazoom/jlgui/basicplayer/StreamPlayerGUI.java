@@ -8,6 +8,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
@@ -15,8 +16,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.InvalidDataException;
@@ -840,7 +843,7 @@ public class StreamPlayerGUI extends JFrame {
                 slide.addChangeListener(e12 -> {
                     try {
                         player.setGain(((JSlider) e12.getSource()).getValue());
-                        System.out.println("Changed gain to " + ((JSlider) e12.getSource()).getValue());
+                        System.out.println("Changed gain to " + ((JSlider) e12.getSource()).getValue() * (1.4 / 100.0));
                     } catch (BasicPlayerException basicPlayerException) {
                         basicPlayerException.printStackTrace();
                     }
