@@ -635,6 +635,16 @@ public class StreamPlayerGUI extends JFrame {
                 try {
                     PreparedStatement ps = connection.prepareStatement("INSERT INTO " + e.getActionCommand() + "  (ID, Title, Artist, Genre, Year, Filepath) SELECT ID, Title, Artist, Genre, Year, Filepath FROM songs WHERE ID='" + j.getValueAt(j.getSelectedRow(), 0) + "'");
                     ps.execute();
+		    Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
+                            model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
+                    for (int i = 1; i < tables.size(); i++)
+                    {
+                        if (tables.get(i).isShowing())
+                        {
+                            DefaultTableModel a = (DefaultTableModel) tables.get(i).getModel();
+                            a.addRow(newRow);
+                        }
+                    }
 
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
