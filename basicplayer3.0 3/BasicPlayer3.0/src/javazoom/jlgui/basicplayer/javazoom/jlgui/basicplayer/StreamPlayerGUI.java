@@ -637,11 +637,11 @@ public class StreamPlayerGUI extends JFrame {
                     ps.execute();
 		    Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
                             model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
-                    for (int i = 1; i < tables.size(); i++)
+                    for (int i1 = 0; i1 < playlistArray.size(); i1++)
                     {
-                        if (tables.get(i).isShowing())
+                        if (e.getSource().equals(playlistArray.get(i1)))
                         {
-                            DefaultTableModel a = (DefaultTableModel) tables.get(i).getModel();
+                            DefaultTableModel a = (DefaultTableModel) tables.get(i1+1).getModel();
                             a.addRow(newRow);
                         }
                     }
@@ -794,77 +794,7 @@ public class StreamPlayerGUI extends JFrame {
                 addToPlaylist.add(pickPlaylist);
                 pickPlaylist.addActionListener(new ButtonListener());
                 playlistArray.add(pickPlaylist);
-                for (int i = 0; i < playlistArray.size(); i++)
-                {
-                    if (playlistArray.get(i).equals(pickPlaylist))
-                    {
-                        playlistArray.get(i).addActionListener(e1 ->  {
-                                for (int i1 = 0; i1 < playlistArray.size(); i1++)
-                                {
-                                    if (e1.getSource().equals(playlistArray.get(i1)))
-                                    {
-                                        String node = playlistArray.get(i1).getText();
-                                        System.out.println(node);
-                                        playlistId = i1+1;
-
-                                        Object [] newRow = {model.getValueAt(currentRow-1, 0), model.getValueAt(currentRow-1, 1), model.getValueAt(currentRow-1, 2),
-                                                model.getValueAt(currentRow-1, 3), model.getValueAt(currentRow-1, 4)};
-                                        DefaultTableModel a = (DefaultTableModel) tables.get(playlistId).getModel();
-                                        a.addRow(newRow);
-
-                                        String filep = null;
-                                        try {
-                                            PreparedStatement fill = connection.prepareStatement("SELECT * FROM songs");
-                                            ResultSet song = fill.executeQuery();
-                                            while (song.next()) {
-                                                if (model.getValueAt(currentRow-1, 0).equals(model.getValueAt(currentRow-1, 0)))
-                                                {
-                                                    idString = song.getString("ID");
-                                                    title = song.getString("Title");
-                                                    genre = song.getString("Genre");
-                                                    artist = song.getString("Artist");
-                                                    year = song.getString("Year");
-                                                    filep = song.getString("Filepath");
-                                                }
-                                            }
-                                        } catch (SQLException throwables) {
-                                            throwables.printStackTrace();
-                                        }
-
-                                        /*idString = (model.getValueAt(currentRow-1, 0)).toString();
-                                        title = (model.getValueAt(currentRow-1, 1)).toString();
-                                        genre = (model.getValueAt(currentRow-1, 2)).toString();
-                                        artist = (model.getValueAt(currentRow-1, 3)).toString();
-                                        year = (model.getValueAt(currentRow-1, 4)).toString();*/
-                                        boolean tableExists1 = false;
-                                        try {
-                                            PreparedStatement getCount = connection.prepareStatement("SELECT count(*) AS count FROM information_schema.TABLES WHERE  (TABLE_NAME = '" + node  + "')");
-                                            ResultSet r = getCount.executeQuery();
-                                            r.next();
-                                            tableExists1 = r.getBoolean("count");
-
-                                        } catch (SQLException throwables) {
-                                            throwables.printStackTrace();
-                                        }
-
-                                        try {
-                                            String query2 = "INSERT INTO " + node + " (ID, Title, Genre, Artist, Year, Filepath) " + "VALUES (?, ?, ?, ?, ?, ?);";
-                                            PreparedStatement preparedStatement = connection.prepareStatement(query2);
-                                            preparedStatement.setString(1, idString);
-                                            preparedStatement.setString(2, title);
-                                            preparedStatement.setString(3, genre);
-                                            preparedStatement.setString(4, artist);
-                                            preparedStatement.setString(5, year);
-                                            preparedStatement.setString(6, filep);
-                                            preparedStatement.executeUpdate();
-                                        } catch (SQLException throwables) {
-                                            throwables.printStackTrace();
-                                        }
-                                    }
-                                }
-                        });
-                    }
-                }
+               
 
                 TreePath tpath = new TreePath(p.getPath());
                 playTree.setSelectionPath(tpath);
