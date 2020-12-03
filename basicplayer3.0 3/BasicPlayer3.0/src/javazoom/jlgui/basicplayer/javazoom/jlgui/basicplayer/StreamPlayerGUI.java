@@ -824,6 +824,12 @@ public class StreamPlayerGUI extends JFrame {
 
                         newWin = tables.get(i + 1);
                         frame.setTitle(openPlaylist.toString());
+                        newWin.setDropMode(DropMode.USE_SELECTION);
+                        newWin.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+                        newWin.setTransferHandler(j.getTransferHandler());
+                        newWin.setDropMode(DropMode.INSERT_ROWS);
+                        newWin.setDragEnabled(true);
+                        newWin.setFillsViewportHeight(true);
 
                         /*Runnable task = () -> {
                             try {
